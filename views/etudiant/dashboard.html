@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Étudiant</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="container">
+            <h1>📚 Système de Présence</h1>
+            <div class="user-info">
+                <span>Bienvenue, <strong>Ahmed Trabelsi</strong></span>
+                <a href="../login.html" class="btn btn-danger btn-sm">Déconnexion</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="dashboard-nav">
+        <div class="container">
+            <a href="dashboard.html" class="active">🏠 Accueil</a>
+            <a href="mes-cours.html">📖 Mes Cours</a>
+            <a href="profil.html">👤 Mon Profil</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="dashboard-content">
+        <div class="container">
+            <h2>👨‍🎓 Tableau de bord Étudiant</h2>
+
+            <!-- Alerte image de profil -->
+            <div class="alert alert-warning">
+                <strong>⚠️ Action requise !</strong> 
+                Vous n'avez pas encore ajouté d'image de profil. 
+                L'image est essentielle pour utiliser le marquage automatique de présence.
+                <br>
+                <a href="profil.html" class="btn btn-primary btn-sm" style="margin-top: 0.8rem;">
+                    📸 Ajouter maintenant →
+                </a>
+            </div>
+
+            <!-- Statistiques rapides -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📚</div>
+                    <div class="stat-info">
+                        <h4>Cours suivis</h4>
+                        <p class="stat-value">5</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info">
+                        <h4>Présences ce mois</h4>
+                        <p class="stat-value" style="color: var(--success);">42</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-info">
+                        <h4>Taux global</h4>
+                        <p class="stat-value">87%</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-info">
+                        <h4>Objectif</h4>
+                        <p class="stat-value" style="color: var(--warning);">75%</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mes Cours -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>📚 Mes Cours</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Nom du cours</th>
+                                    <th>Enseignant</th>
+                                    <th>Niveau</th>
+                                    <th>Taux de présence</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="badge badge-primary">WEB201</span></td>
+                                    <td><strong>Développement Web Dynamique</strong></td>
+                                    <td>Dr. Mouna Medhioub</td>
+                                    <td>2ème année</td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <div style="flex: 1; background: var(--border-color); 
+                                                        height: 8px; border-radius: 4px; overflow: hidden;">
+                                                <div style="width: 92%; height: 100%; 
+                                                           background: linear-gradient(90deg, var(--success), var(--primary-color));"></div>
+                                            </div>
+                                            <span class="badge badge-success">92%</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="mes-cours.html" class="btn btn-info btn-sm">👁️ Voir</a>
+                                        <a href="marquer-presence.html" class="btn btn-success btn-sm">✅ Présence</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge badge-primary">AI301</span></td>
+                                    <td><strong>Intelligence Artificielle</strong></td>
+                                    <td>Prof. Karim Ben Ali</td>
+                                    <td>3ème année</td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <div style="flex: 1; background: var(--border-color); 
+                                                        height: 8px; border-radius: 4px; overflow: hidden;">
+                                                <div style="width: 85%; height: 100%; 
+                                                           background: linear-gradient(90deg, var(--success), var(--primary-color));"></div>
+                                            </div>
+                                            <span class="badge badge-success">85%</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="mes-cours.html" class="btn btn-info btn-sm">👁️ Voir</a>
+                                        <a href="marquer-presence.html" class="btn btn-success btn-sm">✅ Présence</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge badge-primary">BD202</span></td>
+                                    <td><strong>Bases de Données Avancées</strong></td>
+                                    <td>Dr. Sami Jlassi</td>
+                                    <td>2ème année</td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <div style="flex: 1; background: var(--border-color); 
+                                                        height: 8px; border-radius: 4px; overflow: hidden;">
+                                                <div style="width: 68%; height: 100%; 
+                                                           background: linear-gradient(90deg, var(--danger), var(--warning));"></div>
+                                            </div>
+                                            <span class="badge badge-warning">68%</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="mes-cours.html" class="btn btn-info btn-sm">👁️ Voir</a>
+                                        <a href="marquer-presence.html" class="btn btn-success btn-sm">✅ Présence</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Séances du jour -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>📅 Séances d'aujourd'hui</h3>
+                </div>
+                <div class="card-body">
+                    <div style="display: grid; gap: 1rem;">
+                        <div style="background: rgba(8, 145, 178, 0.05); padding: 1.5rem; 
+                                    border-radius: 12px; border-left: 4px solid var(--primary-color);">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div>
+                                    <h4 style="color: var(--primary-color); margin-bottom: 0.5rem;">
+                                        Développement Web Dynamique
+                                    </h4>
+                                    <p style="color: var(--text-light); margin: 0;">
+                                        🕐 10:00 - 12:00 | 📍 Salle A201
+                                    </p>
+                                </div>
+                                <a href="marquer-presence.html" class="btn btn-primary">
+                                    📸 Marquer ma présence
+                                </a>
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(16, 185, 129, 0.05); padding: 1.5rem; 
+                                    border-radius: 12px; border-left: 4px solid var(--success);">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div>
+                                    <h4 style="color: var(--success); margin-bottom: 0.5rem;">
+                                        Intelligence Artificielle - TP
+                                    </h4>
+                                    <p style="color: var(--text-light); margin: 0;">
+                                        🕐 14:00 - 16:00 | 📍 Lab Informatique
+                                    </p>
+                                </div>
+                                <span class="badge badge-success">✅ Présent (10:05)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="dashboard-footer">
+        <p>&copy; 2024 ENS - Système de Présence Intelligent</p>
+    </footer>
+
+    <script>
+        // Animation des cartes au chargement
+        window.addEventListener('load', () => {
+            const cards = document.querySelectorAll('.stat-card, .card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>
