@@ -16,7 +16,7 @@ class Etudiant extends User {
     // Constructeur
     public function __construct($data = []) {
         parent::__construct($data);
-        $this->type_utilisateur = 'etudiant';
+        $this->setTypeUtilisateur('etudiant') ;
     }
     
     // Getters
@@ -67,17 +67,17 @@ class Etudiant extends User {
     public function validate() {
         $errors = parent::validate();
         
-        if (empty($this->numero_etudiant)) {
-            $errors[] = "Le numéro étudiant est requis";
-        }
+        // if (empty($this->numero_etudiant)) {
+        //     $errors[] = "Le numéro étudiant est requis";
+        // }
         
-        if (empty($this->niveau)) {
-            $errors[] = "Le niveau est requis";
-        }
+        // if (empty($this->niveau)) {
+        //     $errors[] = "Le niveau est requis";
+        // }
         
-        if (empty($this->specialite)) {
-            $errors[] = "La spécialité est requise";
-        }
+        // if (empty($this->specialite)) {
+        //     $errors[] = "La spécialité est requise";
+        // }
         
         return $errors;
     }

@@ -12,7 +12,7 @@ class Enseignant extends User {
     
     public function __construct($data = []) {
         parent::__construct($data);
-        $this->type_utilisateur = 'enseignant';
+        $this->setTypeUtilisateur('enseignant') ;
     }
     
     // Getters
@@ -47,13 +47,13 @@ class Enseignant extends User {
     public function validate() {
         $errors = parent::validate();
         
-        if (empty($this->departement)) {
-            $errors[] = "Le département est requis";
-        }
+        // if (empty($this->departement)) {
+        //     $errors[] = "Le département est requis";
+        // }
         
-        if (empty($this->grade)) {
-            $errors[] = "Le grade est requis";
-        }
+        // if (empty($this->grade)) {
+        //     $errors[] = "Le grade est requis";
+        // }
         
         return $errors;
     }

@@ -243,13 +243,16 @@ body {
 /* ===== LOGIN/REGISTER PAGES ===== */
 .login-page, .register-page {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    min-height: 100vh;
+    /* min-height: 100vh; */
     display: flex;
-    align-items: center;
+    align-items:center;
     justify-content: center;
     padding: 2rem;
     position: relative;
-    overflow: hidden;
+    /* overflow: hidden; */
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-y: auto !important;
 }
 
 .login-page::before, .register-page::before {
@@ -281,6 +284,11 @@ body {
     box-shadow: 0 25px 50px rgba(0,0,0,0.2);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
+    /* max-height: 95vh; */
+    /* overflow-y: auto; */
+    padding-right: 1.5rem;
+    max-height: none !important;
+    overflow: visible !important;
 }
 
 .login-header, .register-header {

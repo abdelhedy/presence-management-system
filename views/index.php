@@ -1,3 +1,16 @@
+<?php
+session_start();
+if(isset($_SESSION['user_id'])) {
+    $redirect = match($_SESSION['user_type']) {
+        'etudiant' => 'etudiant/dashboard.php',
+        'enseignant' => 'enseignant/dashboard.php',
+        'administrateur' => 'admin/dashboard.php',
+        default => 'index.php'
+    };
+    header("Location: $redirect");
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -12,8 +25,8 @@
         <div class="container">
             <h1 class="logo">📚 Système de Présence</h1>
             <div class="nav-links">
-                <a href="register.html" class="btn btn-primary">S'inscrire</a>
-                <a href="login.html" class="btn btn-outline">Se connecter</a>
+                <a href="register.php" class="btn btn-primary">S'inscrire</a>
+                <a href="login.php" class="btn btn-outline">Se connecter</a>
             </div>
         </div>
     </nav>

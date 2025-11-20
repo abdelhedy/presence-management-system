@@ -18,26 +18,28 @@ class UserDAO {
      * Créer un nouvel utilisateur
      */
     public function create(User $user) {
+        // CORRIGÉ : Retirer 'statut' car la colonne n'existe pas
         $query = "INSERT INTO " . $this->table . " 
                   SET nom = :nom, 
                       prenom = :prenom, 
                       email = :email, 
                       mot_de_passe = :password, 
                       type_utilisateur = :type,
-                      numero_telephone = :tel, 
-                      statut = 'actif'";
+                      numero_telephone = :tel";
         
         $stmt = $this->conn->prepare($query);
         
-        // Hash du mot de passe
-        $hashed_password = password_hash($user->mot_de_passe, PASSWORD_BCRYPT);
+            // Hash du mot de passe (get plaintext from user object)
+        $plain = $user->getMotDePasse() ;
+        $hashed_password = password_hash($plain, PASSWORD_BCRYPT);
         
-        $stmt->bindParam(":nom", $user->nom);
-        $stmt->bindParam(":prenom", $user->prenom);
-        $stmt->bindParam(":email", $user->email);
-        $stmt->bindParam(":password", $hashed_password);
-        $stmt->bindParam(":type", $user->type_utilisateur);
-        $stmt->bindParam(":tel", $user->numero_telephone);
+        // Use bindValue (bind by value) and getters
+        $stmt->bindValue(":nom", $user->getNom());
+        $stmt->bindValue(":prenom", $user->getPrenom());
+        $stmt->bindValue(":email", $user->getEmail());
+        $stmt->bindValue(":password", $hashed_password);
+        $stmt->bindValue(":type", $user->getTypeUtilisateur());
+        $stmt->bindValue(":tel", $user->getNumeroTelephone());
         
         if ($stmt->execute()) {
             return $this->conn->lastInsertId();
@@ -45,12 +47,14 @@ class UserDAO {
         return false;
     }
     
+    
     /**
      * Connexion - Vérifier email et mot de passe
      */
     public function login($email, $password) {
+        // CORRIGÉ : Retirer la condition sur statut
         $query = "SELECT * FROM " . $this->table . " 
-                  WHERE email = :email AND statut = 'actif' 
+                  WHERE email = :email 
                   LIMIT 1";
         
         $stmt = $this->conn->prepare($query);
@@ -129,9 +133,6 @@ class UserDAO {
         if (!empty($filters['type'])) {
             $query .= " AND u.type_utilisateur = :type";
         }
-        if (!empty($filters['statut'])) {
-            $query .= " AND u.statut = :statut";
-        }
         if (!empty($filters['search'])) {
             $query .= " AND (u.nom LIKE :search OR u.prenom LIKE :search OR u.email LIKE :search)";
         }
@@ -143,9 +144,6 @@ class UserDAO {
         // Bind des filtres
         if (!empty($filters['type'])) {
             $stmt->bindParam(':type', $filters['type']);
-        }
-        if (!empty($filters['statut'])) {
-            $stmt->bindParam(':statut', $filters['statut']);
         }
         if (!empty($filters['search'])) {
             $search_param = "%{$filters['search']}%";
@@ -163,14 +161,42 @@ class UserDAO {
     }
     
     /**
-     * Mettre à jour le statut
+     * Mettre à jour un utilisateur
      */
-    public function updateStatus($id, $newStatus) {
-        $query = "UPDATE " . $this->table . " SET statut = :statut WHERE id_utilisateur = :id";
+    public function update(User $user) {
+        $query = "UPDATE " . $this->table . " 
+                  SET nom = :nom,
+                      prenom = :prenom,
+                      email = :email,
+                      numero_telephone = :tel,
+                      type_utilisateur = :type
+                  WHERE id_utilisateur = :id";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":statut", $newStatus);
-        $stmt->bindParam(":id", $id);
+        
+        $stmt->bindValue(":nom", $user->getNom());
+        $stmt->bindValue(":prenom", $user->getPrenom());
+        $stmt->bindValue(":email", $user->getEmail());
+        $stmt->bindValue(":tel", $user->getNumeroTelephone());
+        $stmt->bindValue(":type", $user->getTypeUtilisateur());
+        $stmt->bindValue(":id", $user->getId());
+        
+        return $stmt->execute();
+    }
+    
+    /**
+     * Mettre à jour le mot de passe
+     */
+    public function updatePassword($userId, $newPassword) {
+        $query = "UPDATE " . $this->table . " 
+                  SET mot_de_passe = :password 
+                  WHERE id_utilisateur = :id";
+        
+        $stmt = $this->conn->prepare($query);
+        
+        $hashed_password = password_hash($newPassword, PASSWORD_BCRYPT);
+        $stmt->bindParam(":password", $hashed_password);
+        $stmt->bindParam(":id", $userId);
         
         return $stmt->execute();
     }
@@ -195,7 +221,7 @@ class UserDAO {
                     COUNT(*) as total,
                     SUM(CASE WHEN type_utilisateur = 'etudiant' THEN 1 ELSE 0 END) as etudiants,
                     SUM(CASE WHEN type_utilisateur = 'enseignant' THEN 1 ELSE 0 END) as enseignants,
-                    SUM(CASE WHEN statut = 'actif' THEN 1 ELSE 0 END) as actifs,
+                    SUM(CASE WHEN type_utilisateur = 'administrateur' THEN 1 ELSE 0 END) as administrateurs,
                     SUM(CASE WHEN DATE(date_inscription) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) THEN 1 ELSE 0 END) as nouveaux_30j
                   FROM " . $this->table;
         

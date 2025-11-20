@@ -27,7 +27,7 @@ class EtudiantDAO {
         
         $stmt = $this->conn->prepare($query);
         
-        $stmt->bindParam(":id_user", $etudiant->id_utilisateur);
+        $stmt->bindParam(":id_user", $etudiant->getId());
         $stmt->bindParam(":numero", $etudiant->numero_etudiant);
         $stmt->bindParam(":niveau", $etudiant->niveau);
         $stmt->bindParam(":specialite", $etudiant->specialite);
