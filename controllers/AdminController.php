@@ -37,71 +37,71 @@ class AdminController {
     /**
      * Changer le statut d'un utilisateur
      */
-    public function changerStatut($idUser, $newStatut) {
-        $valid_statuts = ['actif', 'inactif', 'suspendu'];
+    // public function changerStatut($idUser, $newStatut) {
+    //     $valid_statuts = ['actif', 'inactif', 'suspendu'];
         
-        if (!in_array($newStatut, $valid_statuts)) {
-            return [
-                'success' => false,
-                'error' => 'Statut invalide.'
-            ];
-        }
+    //     if (!in_array($newStatut, $valid_statuts)) {
+    //         return [
+    //             'success' => false,
+    //             'error' => 'Statut invalide.'
+    //         ];
+    //     }
         
-        // Vérifier que ce n'est pas un admin
-        $user = $this->userDAO->findById($idUser);
-        if ($user && $user->type_utilisateur === 'administrateur') {
-            return [
-                'success' => false,
-                'error' => 'Impossible de modifier le statut d\'un administrateur.'
-            ];
-        }
+    //     // Vérifier que ce n'est pas un admin
+    //     $user = $this->userDAO->findById($idUser);
+    //     if ($user && $user->type_utilisateur === 'administrateur') {
+    //         return [
+    //             'success' => false,
+    //             'error' => 'Impossible de modifier le statut d\'un administrateur.'
+    //         ];
+    //     }
         
-        if ($this->userDAO->updateStatus($idUser, $newStatut)) {
-            return [
-                'success' => true,
-                'message' => 'Statut modifié avec succès !'
-            ];
-        }
+    //     if ($this->userDAO->updateStatus($idUser, $newStatut)) {
+    //         return [
+    //             'success' => true,
+    //             'message' => 'Statut modifié avec succès !'
+    //         ];
+    //     }
         
-        return [
-            'success' => false,
-            'error' => 'Erreur lors de la modification du statut.'
-        ];
-    }
+    //     return [
+    //         'success' => false,
+    //         'error' => 'Erreur lors de la modification du statut.'
+    //     ];
+    // }
     
     /**
      * Supprimer un utilisateur
      */
-    public function supprimerUtilisateur($idUser) {
-        // Vérifier que ce n'est pas un admin
-        $user = $this->userDAO->findById($idUser);
+    // public function supprimerUtilisateur($idUser) {
+    //     // Vérifier que ce n'est pas un admin
+    //     $user = $this->userDAO->findById($idUser);
         
-        if (!$user) {
-            return [
-                'success' => false,
-                'error' => 'Utilisateur non trouvé.'
-            ];
-        }
+    //     if (!$user) {
+    //         return [
+    //             'success' => false,
+    //             'error' => 'Utilisateur non trouvé.'
+    //         ];
+    //     }
         
-        if ($user->type_utilisateur === 'administrateur') {
-            return [
-                'success' => false,
-                'error' => 'Impossible de supprimer un administrateur.'
-            ];
-        }
+    //     if ($user->type_utilisateur === 'administrateur') {
+    //         return [
+    //             'success' => false,
+    //             'error' => 'Impossible de supprimer un administrateur.'
+    //         ];
+    //     }
         
-        if ($this->userDAO->delete($idUser)) {
-            return [
-                'success' => true,
-                'message' => 'Utilisateur supprimé avec succès !'
-            ];
-        }
+    //     if ($this->userDAO->delete($idUser)) {
+    //         return [
+    //             'success' => true,
+    //             'message' => 'Utilisateur supprimé avec succès !'
+    //         ];
+    //     }
         
-        return [
-            'success' => false,
-            'error' => 'Erreur lors de la suppression.'
-        ];
-    }
+    //     return [
+    //         'success' => false,
+    //         'error' => 'Erreur lors de la suppression.'
+    //     ];
+    // }
     
     /**
      * Récupérer les statistiques globales
