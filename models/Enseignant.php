@@ -45,7 +45,7 @@ class Enseignant extends User {
      * Validation spécifique enseignant
      */
     public function validate() {
-        $errors = parent::validate();
+        // $errors = parent::validate();
         
         // if (empty($this->departement)) {
         //     $errors[] = "Le département est requis";
@@ -55,7 +55,7 @@ class Enseignant extends User {
         //     $errors[] = "Le grade est requis";
         // }
         
-        return $errors;
+        // return $errors;
     }
     
     /**

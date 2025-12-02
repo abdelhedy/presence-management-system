@@ -25,7 +25,7 @@ class EnseignantDAO {
         
         $stmt = $this->conn->prepare($query);
         
-        $stmt->bindParam(":id_user", $enseignant->id_utilisateur);
+        $stmt->bindParam(":id_user", $enseignant->getId());
         $stmt->bindParam(":dept", $enseignant->departement);
         $stmt->bindParam(":grade", $enseignant->grade);
         

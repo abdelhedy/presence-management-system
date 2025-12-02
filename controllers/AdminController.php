@@ -1,178 +1,334 @@
 <?php
 require_once __DIR__ . '/../dao/UserDAO.php';
+require_once __DIR__ . '/../dao/EtudiantDAO.php';
+require_once __DIR__ . '/../dao/EnseignantDAO.php';
 require_once __DIR__ . '/../dao/CoursDAO.php';
+require_once __DIR__ . '/../dao/SeanceDAO.php';
+require_once __DIR__ . '/../dao/PresenceDAO.php';
+require_once __DIR__ . '/../dao/ImageReferenceDAO.php';
 
 /**
- * AdminController - Gestion des actions administrateur
+ * AdminController - Gestion et statistiques pour l'administrateur
+ * Utilise la vue MySQL 'vue_presences_detaillees' et les DAOs
  */
 class AdminController {
     private $userDAO;
+    private $etudiantDAO;
+    private $enseignantDAO;
     private $coursDAO;
+    private $seanceDAO;
+    private $presenceDAO;
+    private $imageDAO;
+    private $conn;
     
     public function __construct() {
         $this->userDAO = new UserDAO();
+        $this->etudiantDAO = new EtudiantDAO();
+        $this->enseignantDAO = new EnseignantDAO();
         $this->coursDAO = new CoursDAO();
-    }
-    
-    /**
-     * Récupérer les données du dashboard
-     */
-    public function getDashboardData() {
-        return [
-            'stats' => $this->userDAO->getStatistics(),
-            'users' => $this->userDAO->findAll(['limit' => 10])
-        ];
-    }
-    
-    /**
-     * Gérer les utilisateurs
-     */
-    public function gererUtilisateurs($filters = []) {
-        return [
-            'users' => $this->userDAO->findAll($filters),
-            'stats' => $this->userDAO->getStatistics()
-        ];
-    }
-    
-    /**
-     * Changer le statut d'un utilisateur
-     */
-    // public function changerStatut($idUser, $newStatut) {
-    //     $valid_statuts = ['actif', 'inactif', 'suspendu'];
+        $this->seanceDAO = new SeanceDAO();
+        $this->presenceDAO = new PresenceDAO();
+        $this->imageDAO = new ImageReferenceDAO();
         
-    //     if (!in_array($newStatut, $valid_statuts)) {
-    //         return [
-    //             'success' => false,
-    //             'error' => 'Statut invalide.'
-    //         ];
-    //     }
-        
-    //     // Vérifier que ce n'est pas un admin
-    //     $user = $this->userDAO->findById($idUser);
-    //     if ($user && $user->type_utilisateur === 'administrateur') {
-    //         return [
-    //             'success' => false,
-    //             'error' => 'Impossible de modifier le statut d\'un administrateur.'
-    //         ];
-    //     }
-        
-    //     if ($this->userDAO->updateStatus($idUser, $newStatut)) {
-    //         return [
-    //             'success' => true,
-    //             'message' => 'Statut modifié avec succès !'
-    //         ];
-    //     }
-        
-    //     return [
-    //         'success' => false,
-    //         'error' => 'Erreur lors de la modification du statut.'
-    //     ];
-    // }
-    
-    /**
-     * Supprimer un utilisateur
-     */
-    // public function supprimerUtilisateur($idUser) {
-    //     // Vérifier que ce n'est pas un admin
-    //     $user = $this->userDAO->findById($idUser);
-        
-    //     if (!$user) {
-    //         return [
-    //             'success' => false,
-    //             'error' => 'Utilisateur non trouvé.'
-    //         ];
-    //     }
-        
-    //     if ($user->type_utilisateur === 'administrateur') {
-    //         return [
-    //             'success' => false,
-    //             'error' => 'Impossible de supprimer un administrateur.'
-    //         ];
-    //     }
-        
-    //     if ($this->userDAO->delete($idUser)) {
-    //         return [
-    //             'success' => true,
-    //             'message' => 'Utilisateur supprimé avec succès !'
-    //         ];
-    //     }
-        
-    //     return [
-    //         'success' => false,
-    //         'error' => 'Erreur lors de la suppression.'
-    //     ];
-    // }
-    
-    /**
-     * Récupérer les statistiques globales
-     */
-    public function getStatistiques() {
+        // Connexion pour la vue MySQL
         $database = new Database();
-        $conn = $database->getConnection();
-        
+        $this->conn = $database->getConnection();
+    }
+    
+    /**
+     * Dashboard - Statistiques globales
+     */
+    public function getDashboardStats() {
         // Stats utilisateurs
-        $stats_users = $this->userDAO->getStatistics();
+        $statsUsers = $this->userDAO->getStatistics();
         
         // Stats cours
-        $query_cours = "SELECT 
-            COUNT(*) as total_cours,
-            SUM(CASE WHEN statut = 'actif' THEN 1 ELSE 0 END) as cours_actifs
-        FROM cours";
-        $stmt_cours = $conn->prepare($query_cours);
-        $stmt_cours->execute();
-        $stats_cours = $stmt_cours->fetch(PDO::FETCH_ASSOC);
+        $statsCours = $this->coursDAO->getStatsGlobales();
         
         // Stats séances
-        $query_seances = "SELECT 
-            COUNT(*) as total_seances,
-            SUM(CASE WHEN date_seance = CURDATE() THEN 1 ELSE 0 END) as aujourd_hui,
-            SUM(CASE WHEN WEEK(date_seance) = WEEK(CURDATE()) THEN 1 ELSE 0 END) as cette_semaine
-        FROM seances";
-        $stmt_seances = $conn->prepare($query_seances);
-        $stmt_seances->execute();
-        $stats_seances = $stmt_seances->fetch(PDO::FETCH_ASSOC);
+        $statsSeances = $this->seanceDAO->getStatsGlobales();
         
         // Stats présences
-        $query_presences = "SELECT 
-            COUNT(*) as total_presences,
-            SUM(CASE WHEN statut = 'present' THEN 1 ELSE 0 END) as presents,
-            SUM(CASE WHEN methode_validation = 'image' THEN 1 ELSE 0 END) as par_reconnaissance
-        FROM presences
-        WHERE MONTH(date_heure_marquage) = MONTH(CURDATE())
-        AND YEAR(date_heure_marquage) = YEAR(CURDATE())";
-        $stmt_presences = $conn->prepare($query_presences);
-        $stmt_presences->execute();
-        $stats_presences = $stmt_presences->fetch(PDO::FETCH_ASSOC);
+        $statsPresences = $this->presenceDAO->getStatsGlobales();
         
-        // Cours populaires
-        $query_populaires = "SELECT c.nom_cours, c.code_cours, COUNT(i.id_etudiant) as nb_inscrits
-        FROM cours c
-        LEFT JOIN inscriptions i ON c.id_cours = i.id_cours AND i.statut = 'inscrit'
-        WHERE c.statut = 'actif'
-        GROUP BY c.id_cours
-        ORDER BY nb_inscrits DESC
-        LIMIT 5";
-        $stmt_populaires = $conn->prepare($query_populaires);
-        $stmt_populaires->execute();
-        $cours_populaires = $stmt_populaires->fetchAll(PDO::FETCH_ASSOC);
-        
-        // Dernières inscriptions
-        $query_dernieres = "SELECT u.prenom, u.nom, u.type_utilisateur, u.date_inscription
-        FROM utilisateurs u
-        ORDER BY u.date_inscription DESC
-        LIMIT 10";
-        $stmt_dernieres = $conn->prepare($query_dernieres);
-        $stmt_dernieres->execute();
-        $dernieres_inscriptions = $stmt_dernieres->fetchAll(PDO::FETCH_ASSOC);
+        // Stats images
+        $statsImages = $this->imageDAO->getStats();
         
         return [
-            'users' => $stats_users,
-            'cours' => $stats_cours,
-            'seances' => $stats_seances,
-            'presences' => $stats_presences,
-            'cours_populaires' => $cours_populaires,
-            'dernieres_inscriptions' => $dernieres_inscriptions
+            'success' => true,
+            'stats' => [
+                'utilisateurs' => $statsUsers,
+                'cours' => $statsCours,
+                'seances' => $statsSeances,
+                'presences' => $statsPresences,
+                'images' => $statsImages
+            ]
         ];
+    }
+    
+    /**
+     * Récupérer toutes les présences détaillées via la vue MySQL
+     */
+    public function getPresencesDetaillees($filters = []) {
+        $query = "SELECT * FROM vue_presences_detaillees WHERE 1=1";
+        
+        // Filtres dynamiques
+        if (!empty($filters['statut'])) {
+            $query .= " AND statut = :statut";
+        }
+        if (!empty($filters['nom_cours'])) {
+            $query .= " AND nom_cours LIKE :nom_cours";
+        }
+        if (!empty($filters['date_debut'])) {
+            $query .= " AND date_seance >= :date_debut";
+        }
+        if (!empty($filters['date_fin'])) {
+            $query .= " AND date_seance <= :date_fin";
+        }
+        if (!empty($filters['niveau'])) {
+            $query .= " AND niveau = :niveau";
+        }
+        
+        $query .= " ORDER BY date_seance DESC, heure_debut DESC LIMIT 1000";
+        
+        $stmt = $this->conn->prepare($query);
+        
+        if (!empty($filters['statut'])) {
+            $stmt->bindParam(':statut', $filters['statut']);
+        }
+        if (!empty($filters['nom_cours'])) {
+            $search = "%{$filters['nom_cours']}%";
+            $stmt->bindParam(':nom_cours', $search);
+        }
+        if (!empty($filters['date_debut'])) {
+            $stmt->bindParam(':date_debut', $filters['date_debut']);
+        }
+        if (!empty($filters['date_fin'])) {
+            $stmt->bindParam(':date_fin', $filters['date_fin']);
+        }
+        if (!empty($filters['niveau'])) {
+            $stmt->bindParam(':niveau', $filters['niveau']);
+        }
+        
+        $stmt->execute();
+        
+        return [
+            'success' => true,
+            'presences' => $stmt->fetchAll(PDO::FETCH_ASSOC)
+        ];
+    }
+    
+    /**
+     * Statistiques par cours
+     */
+    public function getStatsCours() {
+        $stats = $this->presenceDAO->getStatsParCours();
+        $repartition = $this->coursDAO->getRepartitionCours();
+        
+        return [
+            'success' => true,
+            'stats_presence' => $stats,
+            'repartition' => $repartition
+        ];
+    }
+    
+    /**
+     * Statistiques par enseignant
+     */
+    public function getStatsEnseignants() {
+        $stats = $this->presenceDAO->getStatsParEnseignant();
+        
+        return [
+            'success' => true,
+            'stats' => $stats
+        ];
+    }
+    
+    /**
+     * Alertes : Étudiants avec taux d'absence élevé
+     */
+    public function getAlertesAbsences($seuil = 30) {
+        $alertes = $this->presenceDAO->getAlerteAbsences($seuil);
+        
+        return [
+            'success' => true,
+            'alertes' => $alertes,
+            'seuil' => $seuil
+        ];
+    }
+    
+    /**
+     * Top étudiants assidus
+     */
+    public function getTopEtudiants($limit = 10) {
+        $top = $this->presenceDAO->getTopEtudiantsAssidus($limit);
+        
+        return [
+            'success' => true,
+            'top_etudiants' => $top
+        ];
+    }
+    
+    /**
+     * Étudiants sans photo de profil
+     */
+    public function getEtudiantsSansPhoto() {
+        $etudiants = $this->imageDAO->getEtudiantsSansPhoto();
+        
+        return [
+            'success' => true,
+            'etudiants' => $etudiants,
+            'count' => count($etudiants)
+        ];
+    }
+    
+    /**
+     * Évolution de la présence sur une période
+     */
+    public function getEvolutionPresence($dateDebut, $dateFin) {
+        $evolution = $this->presenceDAO->getEvolutionPresence($dateDebut, $dateFin);
+        $seances = $this->seanceDAO->getSeancesByPeriod($dateDebut, $dateFin);
+        
+        return [
+            'success' => true,
+            'evolution_presence' => $evolution,
+            'evolution_seances' => $seances
+        ];
+    }
+    
+    /**
+     * Gestion des utilisateurs
+     */
+    public function getAllUsers($filters = []) {
+        $users = $this->userDAO->findAll($filters);
+        
+        return [
+            'success' => true,
+            'users' => $users
+        ];
+    }
+    
+    /**
+     * Récupérer tous les étudiants avec détails
+     */
+    public function getAllEtudiants() {
+        $etudiants = $this->etudiantDAO->findAll();
+        
+        return [
+            'success' => true,
+            'etudiants' => $etudiants
+        ];
+    }
+    
+    /**
+     * Récupérer tous les enseignants avec détails
+     */
+    public function getAllEnseignants() {
+        $enseignants = $this->enseignantDAO->findAll();
+        
+        return [
+            'success' => true,
+            'enseignants' => $enseignants
+        ];
+    }
+    
+    /**
+     * Récupérer tous les cours
+     */
+    public function getAllCours($filters = []) {
+        $cours = $this->coursDAO->findAll($filters);
+        
+        return [
+            'success' => true,
+            'cours' => $cours
+        ];
+    }
+    
+    /**
+     * Récupérer toutes les séances (avec filtres)
+     */
+    public function getAllSeances($filters = []) {
+        $seances = $this->seanceDAO->findAllAdmin($filters);
+        
+        return [
+            'success' => true,
+            'seances' => $seances
+        ];
+    }
+    
+    /**
+     * Activer/Désactiver un utilisateur
+     */
+    public function toggleUserStatus($userId) {
+        // Cette fonctionnalité nécessite une colonne 'statut' dans la table utilisateurs
+        // Si vous ne l'avez pas, vous pouvez l'ajouter ou utiliser delete/restore
+        
+        return [
+            'success' => false,
+            'error' => 'Fonctionnalité non implémentée. Ajoutez une colonne statut à la table utilisateurs.'
+        ];
+    }
+    
+    /**
+     * Supprimer un utilisateur (admin)
+     */
+    public function deleteUser($userId) {
+        // Vérifier que ce n'est pas le dernier admin
+        $user = $this->userDAO->findById($userId);
+        
+        if (!$user) {
+            return [
+                'success' => false,
+                'error' => 'Utilisateur non trouvé'
+            ];
+        }
+        
+        if ($user->getTypeUtilisateur() === 'administrateur') {
+            $stats = $this->userDAO->getStatistics();
+            if ($stats['administrateurs'] <= 1) {
+                return [
+                    'success' => false,
+                    'error' => 'Impossible de supprimer le dernier administrateur'
+                ];
+            }
+        }
+        
+        if ($this->userDAO->delete($userId)) {
+            return [
+                'success' => true,
+                'message' => 'Utilisateur supprimé avec succès'
+            ];
+        }
+        
+        return [
+            'success' => false,
+            'error' => 'Erreur lors de la suppression'
+        ];
+    }
+    
+    /**
+     * Générer un rapport PDF/Excel (préparation des données)
+     */
+    public function prepareReport($type, $filters = []) {
+        switch ($type) {
+            case 'presences':
+                return $this->getPresencesDetaillees($filters);
+                
+            case 'cours':
+                return $this->getAllCours($filters);
+                
+            case 'etudiants':
+                return $this->getAllEtudiants();
+                
+            case 'statistiques':
+                return $this->getDashboardStats();
+                
+            default:
+                return [
+                    'success' => false,
+                    'error' => 'Type de rapport inconnu'
+                ];
+        }
     }
 }
 ?>

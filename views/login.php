@@ -2,18 +2,18 @@
 session_start();
 require_once '../controllers/AuthController.php';
 
-if(isset($_SESSION['user_id'])) {
+if (isset($_SESSION['user_id'])) {
     header("Location: index.php");
     exit();
 }
 
 $error = "";
 
-if($_SERVER['REQUEST_METHOD'] == 'POST') {
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $authController = new AuthController();
     $result = $authController->login($_POST['email'], $_POST['password']);
-    
-    if($result['success']) {
+
+    if ($result['success']) {
         header("Location: " . $result['redirect']);
         exit();
     } else {
@@ -23,12 +23,14 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion - Système de Présence</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
+
 <body class="login-page">
     <div class="login-container">
         <div class="login-box">
@@ -50,27 +52,29 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </ul>
             </div> -->
 
-            <form id="loginForm" onsubmit="handleLogin(event)">
+            <?php if ($error): ?>
+                <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
+            <?php endif; ?>
+
+            <form id="loginForm" method="POST" action="login.php">
                 <div class="form-group">
                     <label for="email">📧 Email</label>
-                    <input type="email" 
-                           id="email" 
-                           name="email" 
-                           class="form-control" 
-                           placeholder="votre.email@exemple.com"
-                           value="admin@ens.tn"
-                           required>
+                    <input type="email"
+                        id="email"
+                        name="email"
+                        class="form-control"
+                        placeholder="votre.email@exemple.com"
+                        required>
                 </div>
 
                 <div class="form-group">
                     <label for="password">🔒 Mot de passe</label>
-                    <input type="password" 
-                           id="password" 
-                           name="password" 
-                           class="form-control" 
-                           placeholder="••••••••"
-                           value="admin123"
-                           required>
+                    <input type="password"
+                        id="password"
+                        name="password"
+                        class="form-control"
+                        placeholder="••••••••"
+                        required>
                 </div>
 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
@@ -127,65 +131,12 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 
     <script>
-        function handleLogin(event) {
-            event.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            // Simuler la connexion (en statique)
-            console.log('Tentative de connexion:', email);
-            
-            // Déterminer la redirection selon l'email
-            let redirectUrl = '';
-            
-            if (email.includes('admin')) {
-                redirectUrl = 'admin/dashboard.html';
-            } else if (email.includes('prof') || email.includes('enseignant')) {
-                redirectUrl = 'enseignant/dashboard.html';
-            } else {
-                redirectUrl = 'etudiant/dashboard.html';
-            }
-            
-            // Animation de chargement
-            const btn = event.target.querySelector('button[type="submit"]');
-            btn.innerHTML = '⏳ Connexion en cours...';
-            btn.disabled = true;
-            
-            // Simuler un délai
-            setTimeout(() => {
-                // Afficher succès
-                showAlert('Connexion réussie ! Redirection...', 'success');
-                
-                setTimeout(() => {
-                    window.location.href = redirectUrl;
-                }, 1000);
-            }, 1000);
-        }
-        
-        function showAlert(message, type) {
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type}`;
-            alertDiv.innerHTML = message;
-            alertDiv.style.animation = 'slideDown 0.3s ease';
-            
-            const form = document.getElementById('loginForm');
-            form.parentNode.insertBefore(alertDiv, form);
-            
-            setTimeout(() => {
-                alertDiv.style.opacity = '0';
-                alertDiv.style.transform = 'translateY(-20px)';
-                alertDiv.style.transition = 'all 0.3s ease';
-                setTimeout(() => alertDiv.remove(), 300);
-            }, 3000);
-        }
-        
         // Animation d'entrée
         window.addEventListener('load', () => {
             const loginBox = document.querySelector('.login-box');
             loginBox.style.opacity = '0';
             loginBox.style.transform = 'translateY(-20px)';
-            
+
             setTimeout(() => {
                 loginBox.style.transition = 'all 0.5s ease';
                 loginBox.style.opacity = '1';
@@ -194,4 +145,5 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
         });
     </script>
 </body>
+
 </html>

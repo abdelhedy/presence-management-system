@@ -115,7 +115,7 @@ class AuthController
         }
 
         return [
-            'success' => true, 
+            'success' => true,
             'message' => 'Inscription réussie !',
             'redirect' => $this->getRedirectUrl($user->getTypeUtilisateur())
         ];
@@ -148,8 +148,21 @@ class AuthController
         }
 
         // Créer le profil étudiant
-        if ($this->etudiantDAO->create($etudiant)) {
-            return ['success' => true, 'message' => 'Inscription réussie ! Vous pouvez maintenant vous connecter.'];
+        $etudiantId = $this->etudiantDAO->create($etudiant);
+
+        if ($etudiantId) {
+            // Auto-login après inscription
+            $_SESSION['user_id'] = $userId;
+            $_SESSION['user_name'] = $data['nom'] . ' ' . $data['prenom'];
+            $_SESSION['user_type'] = 'etudiant';
+            $_SESSION['user_email'] = $data['email'];
+            $_SESSION['etudiant_id'] = $etudiantId;
+
+            return [
+                'success' => true,
+                'message' => 'Inscription réussie !',
+                'redirect' => 'etudiant/dashboard.php'
+            ];
         }
 
         // En cas d'erreur, supprimer l'utilisateur
@@ -175,8 +188,21 @@ class AuthController
         }
 
         // Créer le profil enseignant
-        if ($this->enseignantDAO->create($enseignant)) {
-            return ['success' => true, 'message' => 'Inscription réussie ! Vous pouvez maintenant vous connecter.'];
+        $enseignantId = $this->enseignantDAO->create($enseignant);
+
+        if ($enseignantId) {
+            // Auto-login après inscription
+            $_SESSION['user_id'] = $userId;
+            $_SESSION['user_name'] = $data['nom'] . ' ' . $data['prenom'];
+            $_SESSION['user_type'] = 'enseignant';
+            $_SESSION['user_email'] = $data['email'];
+            $_SESSION['enseignant_id'] = $enseignantId;
+
+            return [
+                'success' => true,
+                'message' => 'Inscription réussie !',
+                'redirect' => 'enseignant/dashboard.php'
+            ];
         }
 
         $this->userDAO->delete($userId);

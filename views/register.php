@@ -10,8 +10,8 @@ if (isset($_SESSION['user_id'])) {
 $error = "";
 $success = "";
 
-if($_SERVER['REQUEST_METHOD'] == 'POST') {
-     // DEBUG - Afficher les données reçues
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // DEBUG - Afficher les données reçues
     // echo "<pre style='background: #f0f0f0; padding: 10px; margin: 10px; border: 2px solid red;'>";
     // echo "DONNÉES REÇUES:\n";
     // print_r($_POST);
@@ -19,7 +19,12 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
     $authController = new AuthController();
     $result = $authController->register($_POST);
 
-    if($result['success']) {
+    if ($result['success']) {
+        // Redirection automatique si inscription réussie
+        if (isset($result['redirect'])) {
+            header("Location: " . $result['redirect']);
+            exit();
+        }
         $success = $result['message'];
     } else {
         $error = isset($result['error']) ? $result['error'] : implode(', ', $result['errors'] ?? []);
@@ -108,34 +113,34 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <input type="text" id="numero_etudiant" name="numero_etudiant" class="form-control">
                     </div>
 
-                <div class="form-group">
+                    <div class="form-group">
                         <label for="specialite">Spécialité / Formation *</label>
                         <select id="specialite" name="specialite" class="form-control" onchange="updateNiveaux()">
                             <option value="">Sélectionner une spécialité...</option>
-                            
+
                             <optgroup label="🎓 Licence ">
                                 <option value="Licence TIC">Licence en Technologies de l'Information et de la Communication (L-TIC)</option>
                             </optgroup>
-                            
+
                             <optgroup label="👨‍💻 Cycle Ingénieur ">
                                 <option value="Génie Électronique">Génie des Systèmes Électroniques de Communication (GEC)</option>
                                 <option value="Génie Télécommunications">Génie des Télécommunications (GT)</option>
                                 <option value="Génie Informatique Industrielle">Génie Informatique Industrielle (GII)</option>
                                 <option value="Ingénierie Données">Ingénierie des Données et Systèmes Décisionnels (IDSD)</option>
                             </optgroup>
-                            
+
                             <optgroup label="🎯 Mastère Professionnel ">
                                 <option value="MP RITEL">MP Réseaux Informatiques et Télécommunications (RITEL)</option>
                                 <option value="MP Systèmes Embarqués">MP Systèmes Embarqués (SE)</option>
                                 <option value="MP Industriel">MP Vision Robotique et Systèmes Industriels (II)</option>
                                 <option value="MP Auto-Aéro">MP Ingénierie Automobile et Aéronautique</option>
                             </optgroup>
-                            
+
                             <optgroup label="🔬 Mastère de Recherche ">
                                 <option value="MR STIC">MR Technologies de l'Information et de la Communication (STIC)</option>
                                 <option value="MR ISI">MR Ingénierie des Systèmes Informatiques (ISI)</option>
                             </optgroup>
-                            
+
                             <optgroup label="📖 Doctorat ">
                                 <option value="Doctorat">Doctorat en Sciences et Technologies</option>
                             </optgroup>
@@ -143,7 +148,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </div>
 
                     <div class="form-group">
-                        <label for="niveau">Niveau  *</label>
+                        <label for="niveau">Niveau *</label>
                         <select id="niveau" name="niveau" class="form-control">
                             <option value="">Sélectionner d'abord une spécialité...</option>
                         </select>
@@ -156,7 +161,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <strong>👨‍🏫 Informations enseignant</strong>
                     </div>
 
-                      <div class="form-group">
+                    <div class="form-group">
                         <label for="departement">Département *</label>
                         <select id="departement" name="departement" class="form-control">
                             <option value="">Sélectionner...</option>
@@ -197,120 +202,120 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 
     <script>
-    // Configuration des niveaux selon la spécialité
-    const niveauxParSpecialite = {
-        'Licence TIC': ['1ère année', '2ème année', '3ème année'],
-        
-        'Génie Électronique': ['1ère année', '2ème année', '3ème année'],
-        'Génie Télécommunications': ['1ère année', '2ème année', '3ème année'],
-        'Génie Informatique Industrielle': ['1ère année', '2ème année', '3ème année'],
-        'Ingénierie Données': ['1ère année', '2ème année', '3ème année'],
-        
-        'MP RITEL': ['1ère année', '2ème année'],
-        'MP Systèmes Embarqués': ['1ère année', '2ème année'],
-        'MP Industriel': ['1ère année', '2ème année'],
-        'MP Auto-Aéro': ['1ère année', '2ème année'],
-        
-        'MR STIC': ['1ère année', '2ème année'],
-        'MR ISI': ['1ère année', '2ème année'],
-        
-        'Doctorat': ['1ère année', '2ème année', '3ème année', '4ème année', '5ème année']
-    };
+        // Configuration des niveaux selon la spécialité
+        const niveauxParSpecialite = {
+            'Licence TIC': ['1ère année', '2ème année', '3ème année'],
 
-    // Mettre à jour les niveaux selon la spécialité choisie
-    function updateNiveaux() {
-        const specialiteSelect = document.getElementById('specialite');
-        const niveauSelect = document.getElementById('niveau');
-        const specialite = specialiteSelect.value;
-        
-        // Réinitialiser les niveaux
-        niveauSelect.innerHTML = '<option value="">Sélectionner...</option>';
-        
-        if (specialite && niveauxParSpecialite[specialite]) {
-            const niveaux = niveauxParSpecialite[specialite];
-            niveaux.forEach(niveau => {
-                const option = document.createElement('option');
-                option.value = niveau;
-                option.textContent = niveau;
-                niveauSelect.appendChild(option);
-            });
-            niveauSelect.disabled = false;
-        } else {
-            niveauSelect.innerHTML = '<option value="">Sélectionner d\'abord une spécialité...</option>';
-            niveauSelect.disabled = true;
-        }
-    }
+            'Génie Électronique': ['1ère année', '2ème année', '3ème année'],
+            'Génie Télécommunications': ['1ère année', '2ème année', '3ème année'],
+            'Génie Informatique Industrielle': ['1ère année', '2ème année', '3ème année'],
+            'Ingénierie Données': ['1ère année', '2ème année', '3ème année'],
 
-    // Basculer entre champs étudiant/enseignant
-    function toggleFields() {
-        const isStudent = document.querySelector('input[name="type_utilisateur"][value="etudiant"]').checked;
-        const etudiantFields = document.getElementById('etudiantFields');
-        const enseignantFields = document.getElementById('enseignantFields');
-        
-        const studentInputs = etudiantFields.querySelectorAll('input, select');
-        const teacherInputs = enseignantFields.querySelectorAll('input, select');
+            'MP RITEL': ['1ère année', '2ème année'],
+            'MP Systèmes Embarqués': ['1ère année', '2ème année'],
+            'MP Industriel': ['1ère année', '2ème année'],
+            'MP Auto-Aéro': ['1ère année', '2ème année'],
 
-        if (isStudent) {
-            etudiantFields.style.display = 'block';
-            enseignantFields.style.display = 'none';
-            
-            studentInputs.forEach(input => input.setAttribute('required', 'required'));
-            teacherInputs.forEach(input => {
-                input.removeAttribute('required');
-                input.value = '';
-            });
-        } else {
-            etudiantFields.style.display = 'none';
-            enseignantFields.style.display = 'block';
-            
-            teacherInputs.forEach(input => input.setAttribute('required', 'required'));
-            studentInputs.forEach(input => {
-                input.removeAttribute('required');
-                input.value = '';
-            });
-        }
-    }
+            'MR STIC': ['1ère année', '2ème année'],
+            'MR ISI': ['1ère année', '2ème année'],
 
-    // Validation avant soumission
-    document.getElementById('registerForm').addEventListener('submit', function(e) {
-        const password = document.getElementById('password').value;
-        
-        if (password.length < 6) {
-            e.preventDefault();
-            alert('Le mot de passe doit contenir au moins 6 caractères.');
-            return false;
-        }
-        
-        const type = document.querySelector('input[name="type_utilisateur"]:checked').value;
-        
-        if (type === 'etudiant') {
-            const numero = document.getElementById('numero_etudiant').value.trim();
-            const specialite = document.getElementById('specialite').value;
-            const niveau = document.getElementById('niveau').value;
-            
-            if (!numero || !specialite || !niveau) {
-                e.preventDefault();
-                alert('Veuillez remplir tous les champs obligatoires (numéro étudiant, spécialité et niveau).');
-                return false;
-            }
-        } else if (type === 'enseignant') {
-            const departement = document.getElementById('departement').value;
-            const grade = document.getElementById('grade').value;
-            
-            if (!departement || !grade) {
-                e.preventDefault();
-                alert('Veuillez remplir tous les champs obligatoires (département et grade).');
-                return false;
+            'Doctorat': ['1ère année', '2ème année', '3ème année', '4ème année', '5ème année']
+        };
+
+        // Mettre à jour les niveaux selon la spécialité choisie
+        function updateNiveaux() {
+            const specialiteSelect = document.getElementById('specialite');
+            const niveauSelect = document.getElementById('niveau');
+            const specialite = specialiteSelect.value;
+
+            // Réinitialiser les niveaux
+            niveauSelect.innerHTML = '<option value="">Sélectionner...</option>';
+
+            if (specialite && niveauxParSpecialite[specialite]) {
+                const niveaux = niveauxParSpecialite[specialite];
+                niveaux.forEach(niveau => {
+                    const option = document.createElement('option');
+                    option.value = niveau;
+                    option.textContent = niveau;
+                    niveauSelect.appendChild(option);
+                });
+                niveauSelect.disabled = false;
+            } else {
+                niveauSelect.innerHTML = '<option value="">Sélectionner d\'abord une spécialité...</option>';
+                niveauSelect.disabled = true;
             }
         }
-    });
 
-    // Initialiser au chargement
-    document.addEventListener('DOMContentLoaded', function() {
-        toggleFields();
-        updateNiveaux();
-    });
-</script>
+        // Basculer entre champs étudiant/enseignant
+        function toggleFields() {
+            const isStudent = document.querySelector('input[name="type_utilisateur"][value="etudiant"]').checked;
+            const etudiantFields = document.getElementById('etudiantFields');
+            const enseignantFields = document.getElementById('enseignantFields');
+
+            const studentInputs = etudiantFields.querySelectorAll('input, select');
+            const teacherInputs = enseignantFields.querySelectorAll('input, select');
+
+            if (isStudent) {
+                etudiantFields.style.display = 'block';
+                enseignantFields.style.display = 'none';
+
+                studentInputs.forEach(input => input.setAttribute('required', 'required'));
+                teacherInputs.forEach(input => {
+                    input.removeAttribute('required');
+                    input.value = '';
+                });
+            } else {
+                etudiantFields.style.display = 'none';
+                enseignantFields.style.display = 'block';
+
+                teacherInputs.forEach(input => input.setAttribute('required', 'required'));
+                studentInputs.forEach(input => {
+                    input.removeAttribute('required');
+                    input.value = '';
+                });
+            }
+        }
+
+        // Validation avant soumission
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+
+            if (password.length < 6) {
+                e.preventDefault();
+                alert('Le mot de passe doit contenir au moins 6 caractères.');
+                return false;
+            }
+
+            const type = document.querySelector('input[name="type_utilisateur"]:checked').value;
+
+            if (type === 'etudiant') {
+                const numero = document.getElementById('numero_etudiant').value.trim();
+                const specialite = document.getElementById('specialite').value;
+                const niveau = document.getElementById('niveau').value;
+
+                if (!numero || !specialite || !niveau) {
+                    e.preventDefault();
+                    alert('Veuillez remplir tous les champs obligatoires (numéro étudiant, spécialité et niveau).');
+                    return false;
+                }
+            } else if (type === 'enseignant') {
+                const departement = document.getElementById('departement').value;
+                const grade = document.getElementById('grade').value;
+
+                if (!departement || !grade) {
+                    e.preventDefault();
+                    alert('Veuillez remplir tous les champs obligatoires (département et grade).');
+                    return false;
+                }
+            }
+        });
+
+        // Initialiser au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleFields();
+            updateNiveaux();
+        });
+    </script>
     <!-- <script>
         function toggleFields() {
             const type = document.querySelector('input[name="type_utilisateur"]:checked').value;
@@ -327,7 +332,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     </script> -->
 
-<!-- <script>
+    <!-- <script>
     function toggleFields() {
         const isStudent = document.querySelector('input[name="type_utilisateur"][value="etudiant"]').checked;
         const etudiantFields = document.getElementById('etudiantFields');
