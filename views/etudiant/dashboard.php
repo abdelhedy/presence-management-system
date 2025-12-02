@@ -257,7 +257,7 @@ $hasImage = $imageResult['success'];
                     ✓
                 </div>
                 <div>
-                    <h3 style="font-size: 2rem; margin-bottom: 0.2rem;"><?= $stats['total_presents'] ?? 0 ?></h3>
+                    <h3 style="font-size: 2rem; margin-bottom: 0.2rem;"><?= isset($stats['total_presents']) ? $stats['total_presents'] : 0 ?></h3>
                     <p style="color: var(--text-light); font-size: 0.9rem;">Présences</p>
                 </div>
             </div>
@@ -267,7 +267,7 @@ $hasImage = $imageResult['success'];
                     ✗
                 </div>
                 <div>
-                    <h3 style="font-size: 2rem; margin-bottom: 0.2rem;"><?= $stats['total_absents'] ?? 0 ?></h3>
+                    <h3 style="font-size: 2rem; margin-bottom: 0.2rem;"><?= isset($stats['total_absents']) ? $stats['total_absents'] : 0 ?></h3>
                     <p style="color: var(--text-light); font-size: 0.9rem;">Absences</p>
                 </div>
             </div>
@@ -277,7 +277,7 @@ $hasImage = $imageResult['success'];
                     📊
                 </div>
                 <div>
-                    <h3 style="font-size: 2rem; margin-bottom: 0.2rem;"><?= $stats['taux_presence'] ?? 0 ?>%</h3>
+                    <h3 style="font-size: 2rem; margin-bottom: 0.2rem;"><?= isset($stats['taux_presence']) ? number_format($stats['taux_presence'], 0) : 0 ?>%</h3>
                     <p style="color: var(--text-light); font-size: 0.9rem;">Taux de présence</p>
                 </div>
             </div>
@@ -349,14 +349,14 @@ $hasImage = $imageResult['success'];
                                 <?= htmlspecialchars($stat['nom_cours']) ?>
                             </h4>
                             <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-light); margin-bottom: 0.8rem;">
-                                <span>✓ <?= $stat['nb_presents'] ?> présent(s)</span>
-                                <span>✗ <?= $stat['nb_absents'] ?> absent(s)</span>
+                                <span>✓ <?= $stat['total_presents'] ?? 0 ?> présent(s)</span>
+                                <span>✗ <?= $stat['total_absents'] ?? 0 ?> absent(s)</span>
                             </div>
                             <div style="background: var(--light-bg); border-radius: 8px; height: 8px; overflow: hidden;">
-                                <div style="background: var(--success); height: 100%; width: <?= $stat['taux_presence'] ?>%;"></div>
+                                <div style="background: var(--success); height: 100%; width: <?= $stat['taux_presence'] ?? 0 ?>%;"></div>
                             </div>
                             <p style="text-align: center; margin-top: 0.5rem; font-size: 0.9rem; font-weight: 600; color: var(--primary-color);">
-                                <?= $stat['taux_presence'] ?>%
+                                <?= number_format($stat['taux_presence'] ?? 0, 0) ?>%
                             </p>
                         </div>
                     <?php endforeach; ?>

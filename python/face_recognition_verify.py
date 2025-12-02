@@ -1,93 +1,92 @@
 #!/usr/bin/env python3
 """
-Script de vérification de reconnaissance faciale
+Script de vérification de reconnaissance faciale avec DeepFace
 Utilisé lors du marquage de présence pour comparer le visage capturé
 avec la photo de référence de l'étudiant
 """
 
 import sys
 import json
-import numpy as np
+import os
+
+# Supprimer les logs TensorFlow
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # FATAL
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
+import warnings
+warnings.filterwarnings('ignore')
 
 try:
-    import face_recognition
+    from deepface import DeepFace
 except ImportError:
     print(json.dumps({
         "success": False,
-        "error": "Module face_recognition non installé. Exécutez: pip install face_recognition"
+        "error": "Module deepface non installé. Exécutez: pip install deepface"
     }))
     sys.exit(1)
 
 
-def verify_faces(reference_image_path, captured_image_path, tolerance=0.6):
+def verify_faces(reference_image_path, captured_image_path, threshold=0.4):
     """
-    Compare deux images pour vérifier si c'est la même personne
+    Compare deux images pour vérifier si c'est la même personne avec DeepFace
     
     Args:
         reference_image_path (str): Chemin vers l'image de référence
         captured_image_path (str): Chemin vers l'image capturée
-        tolerance (float): Seuil de tolérance (plus bas = plus strict)
+        threshold (float): Seuil de distance pour Facenet (par défaut 0.4)
         
     Returns:
         dict: Résultat avec match, confidence, distance
     """
     try:
-        # Charger les images
-        reference_image = face_recognition.load_image_file(reference_image_path)
-        captured_image = face_recognition.load_image_file(captured_image_path)
+        # Vérifier les images avec DeepFace
+        result = DeepFace.verify(
+            img1_path=reference_image_path,
+            img2_path=captured_image_path,
+            model_name='Facenet',
+            detector_backend='opencv',
+            enforce_detection=True,
+            align=True,
+            distance_metric='cosine'
+        )
         
-        # Extraire les encodages de l'image de référence
-        ref_face_locations = face_recognition.face_locations(reference_image)
-        ref_face_encodings = face_recognition.face_encodings(reference_image, ref_face_locations)
-        
-        if len(ref_face_encodings) == 0:
-            return {
-                "success": False,
-                "error": "Aucun visage détecté dans l'image de référence"
-            }
-        
-        # Extraire les encodages de l'image capturée
-        cap_face_locations = face_recognition.face_locations(captured_image)
-        cap_face_encodings = face_recognition.face_encodings(captured_image, cap_face_locations)
-        
-        if len(cap_face_encodings) == 0:
-            return {
-                "success": False,
-                "error": "Aucun visage détecté dans la capture. Réessayez en vous plaçant face à la caméra."
-            }
-        
-        if len(cap_face_encodings) > 1:
-            return {
-                "success": False,
-                "error": "Plusieurs visages détectés. Assurez-vous d'être seul(e) dans le cadre."
-            }
-        
-        # Comparer les visages
-        reference_encoding = ref_face_encodings[0]
-        captured_encoding = cap_face_encodings[0]
-        
-        # Calculer la distance entre les encodages
-        face_distance = face_recognition.face_distance([reference_encoding], captured_encoding)[0]
-        
-        # Déterminer si c'est un match
-        is_match = face_distance <= tolerance
+        # Résultat de DeepFace
+        is_match = result["verified"]
+        distance = result["distance"]
+        threshold_used = result["threshold"]
         
         # Calculer le score de confiance (0-100%)
-        # Plus la distance est faible, plus la confiance est élevée
-        confidence = max(0, min(100, (1 - face_distance) * 100))
+        # Pour Facenet avec cosine, plus la distance est faible, plus la confiance est élevée
+        # Distance typique: 0-1, où 0 = parfaitement identique
+        confidence = max(0, min(100, (1 - distance) * 100))
         
         return {
             "success": True,
             "match": bool(is_match),
             "confidence": float(confidence),
-            "distance": float(face_distance),
-            "tolerance_used": tolerance
+            "distance": float(distance),
+            "threshold_used": float(threshold_used),
+            "model": "Facenet",
+            "detector": "opencv"
         }
     
     except FileNotFoundError as e:
         return {
             "success": False,
             "error": f"Fichier introuvable: {str(e)}"
+        }
+    
+    except ValueError as e:
+        # DeepFace lève ValueError si aucun visage n'est détecté
+        error_msg = str(e)
+        if "could not find" in error_msg.lower() or "no face" in error_msg.lower():
+            return {
+                "success": False,
+                "error": "Aucun visage détecté dans l'une des images. Réessayez en vous plaçant face à la caméra."
+            }
+        return {
+            "success": False,
+            "error": f"Erreur de détection: {error_msg}"
         }
     
     except Exception as e:
@@ -102,16 +101,16 @@ if __name__ == "__main__":
     if len(sys.argv) < 3:
         print(json.dumps({
             "success": False,
-            "error": "Usage: python face_recognition_verify.py <reference_image> <captured_image> [tolerance]"
+            "error": "Usage: python face_recognition_verify.py <reference_image> <captured_image> [threshold]"
         }))
         sys.exit(1)
     
     reference_image = sys.argv[1]
     captured_image = sys.argv[2]
-    tolerance = float(sys.argv[3]) if len(sys.argv) > 3 else 0.6
+    threshold = float(sys.argv[3]) if len(sys.argv) > 3 else 0.4
     
     # Effectuer la vérification
-    result = verify_faces(reference_image, captured_image, tolerance)
+    result = verify_faces(reference_image, captured_image, threshold)
     
     # Retourner le résultat en JSON
     print(json.dumps(result))

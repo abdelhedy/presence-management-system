@@ -5,63 +5,84 @@ require_once __DIR__ . '/User.php';
  * Classe métier Enseignant
  * Hérite de User
  */
-class Enseignant extends User {
+class Enseignant extends User
+{
     public $id_enseignant;
     public $departement;
     public $grade;
-    
-    public function __construct($data = []) {
+
+    public function __construct($data = [])
+    {
         parent::__construct($data);
-        $this->setTypeUtilisateur('enseignant') ;
+        $this->setTypeUtilisateur('enseignant');
+
+        // Charger les propriétés spécifiques si présentes
+        if (isset($data['id_enseignant'])) {
+            $this->id_enseignant = $data['id_enseignant'];
+        }
+        if (isset($data['departement'])) {
+            $this->departement = $data['departement'];
+        }
+        if (isset($data['grade'])) {
+            $this->grade = $data['grade'];
+        }
     }
-    
+
     // Getters
-    public function getIdEnseignant() {
+    public function getIdEnseignant()
+    {
         return $this->id_enseignant;
     }
-    
-    public function getDepartement() {
+
+    public function getDepartement()
+    {
         return $this->departement;
     }
-    
-    public function getGrade() {
+
+    public function getGrade()
+    {
         return $this->grade;
     }
-    
+
     // Setters
-    public function setIdEnseignant($id) {
+    public function setIdEnseignant($id)
+    {
         $this->id_enseignant = (int)$id;
     }
-    
-    public function setDepartement($dept) {
+
+    public function setDepartement($dept)
+    {
         $this->departement = htmlspecialchars(trim($dept));
     }
-    
-    public function setGrade($grade) {
+
+    public function setGrade($grade)
+    {
         $this->grade = htmlspecialchars(trim($grade));
     }
-    
+
     /**
      * Validation spécifique enseignant
      */
-    public function validate() {
+    public function validate()
+    {
         // $errors = parent::validate();
-        
+
         // if (empty($this->departement)) {
         //     $errors[] = "Le département est requis";
         // }
-        
+
         // if (empty($this->grade)) {
         //     $errors[] = "Le grade est requis";
         // }
-        
+
         // return $errors;
     }
-    
+
     /**
      * Retourne un tableau complet
      */
-    public function toArray() {
+    public function toArray()
+    {
         return array_merge(parent::toArray(), [
             'id_enseignant' => $this->id_enseignant,
             'departement' => $this->departement,
@@ -69,4 +90,3 @@ class Enseignant extends User {
         ]);
     }
 }
-?>

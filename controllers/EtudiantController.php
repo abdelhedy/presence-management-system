@@ -50,6 +50,47 @@ class EtudiantController
     }
 
     /**
+     * Récupérer toutes les séances de l'étudiant (passées et à venir)
+     */
+    public function getAllSeancesByEtudiant($idEtudiant)
+    {
+        require_once __DIR__ . '/../config/database.php';
+
+        $database = new Database();
+        $conn = $database->getConnection();
+
+        $query = "SELECT 
+                    s.id_seance,
+                    s.date_seance,
+                    s.heure_debut,
+                    s.heure_fin,
+                    s.salle,
+                    s.statut,
+                    c.id_cours,
+                    c.nom_cours,
+                    c.code_cours,
+                    CONCAT(u.prenom, ' ', u.nom) as nom_enseignant,
+                    p.statut as presence_statut
+                FROM seances s
+                INNER JOIN cours c ON s.id_cours = c.id_cours
+                INNER JOIN enseignants ens ON c.id_enseignant = ens.id_enseignant
+                INNER JOIN utilisateurs u ON ens.id_utilisateur = u.id_utilisateur
+                INNER JOIN inscriptions i ON c.id_cours = i.id_cours
+                LEFT JOIN presences p ON s.id_seance = p.id_seance AND p.id_etudiant = i.id_etudiant
+                WHERE i.id_etudiant = :id_etudiant
+                ORDER BY s.date_seance DESC, s.heure_debut DESC";
+
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(':id_etudiant', $idEtudiant);
+        $stmt->execute();
+
+        return [
+            'success' => true,
+            'seances' => $stmt->fetchAll(PDO::FETCH_ASSOC)
+        ];
+    }
+
+    /**
      * Récupérer un étudiant par ID
      */
     public function getById($idEtudiant)

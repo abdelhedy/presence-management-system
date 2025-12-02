@@ -20,7 +20,14 @@ $message = '';
 $messageType = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['photo'])) {
+    // Debug
+    error_log("=== DEBUG UPLOAD ===");
+    error_log("ID Etudiant: " . $idEtudiant);
+    error_log("Fichier: " . print_r($_FILES['photo'], true));
+
     $result = $imageController->uploadPhoto($idEtudiant, $_FILES['photo']);
+
+    error_log("Résultat upload: " . print_r($result, true));
 
     if ($result['success']) {
         $message = $result['message'];

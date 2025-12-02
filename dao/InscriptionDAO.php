@@ -90,8 +90,11 @@ class InscriptionDAO
     public function findByEtudiant($idEtudiant)
     {
         $query = "SELECT i.*, 
-                  c.nom_cours, c.code_cours, c.niveau, c.specialite,
-                  CONCAT(u.prenom, ' ', u.nom) as nom_enseignant
+                  c.id_cours,
+                  c.nom_cours, c.code_cours, c.niveau, c.specialite, c.description,
+                  CONCAT(u.prenom, ' ', u.nom) as nom_enseignant,
+                  (SELECT COUNT(*) FROM seances WHERE id_cours = c.id_cours) as nb_seances,
+                  (SELECT COUNT(*) FROM inscriptions WHERE id_cours = c.id_cours AND statut = 'inscrit') as nb_inscrits
                   FROM " . $this->table . " i
                   JOIN cours c ON i.id_cours = c.id_cours
                   JOIN enseignants ens ON c.id_enseignant = ens.id_enseignant

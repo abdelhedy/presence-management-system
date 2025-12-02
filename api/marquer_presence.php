@@ -71,6 +71,9 @@ try {
     $match = $verificationResult['match'] ?? false;
     $confidence = $verificationResult['confidence'] ?? 0;
 
+    // Log pour debug
+    error_log("Résultat vérification - Match: " . ($match ? 'true' : 'false') . ", Confidence: $confidence");
+
     if (!$match || $confidence < 70) {
         echo json_encode([
             'success' => false,
@@ -81,12 +84,14 @@ try {
     }
 
     // Marquer la présence
+    error_log("Tentative de marquage de présence - Séance: $idSeance, Étudiant: $idEtudiant, Confidence: $confidence");
     $presenceController = new PresenceController();
     $result = $presenceController->marquerPresenceReconnaissanceFaciale(
         $idSeance,
         $idEtudiant,
         $confidence
     );
+    error_log("Résultat marquage: " . json_encode($result));
 
     if ($result['success']) {
         echo json_encode([
