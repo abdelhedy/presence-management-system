@@ -2,6 +2,7 @@
 session_start();
 require_once '../../controllers/AuthController.php';
 require_once '../../controllers/SeanceController.php';
+require_once '../../config/auto_update_seances.php'; // Mise à jour automatique des statuts
 
 AuthController::requireUserType('enseignant');
 
@@ -201,9 +202,21 @@ $seances = $seancesResult['success'] ? $seancesResult['seances'] : [];
                             </div>
                         </div>
                         <div style="display: flex; align-items: center; gap: 1rem;">
-                            <span class="badge badge-<?= $seance['statut'] ?>">
-                                <?= ucfirst($seance['statut']) ?>
-                            </span>
+                            <?php
+                            $badgeClass = 'badge-info';
+                            $badgeText = 'Planifiée';
+                            if ($seance['statut'] === 'en_cours') {
+                                $badgeClass = 'badge-success';
+                                $badgeText = 'En cours';
+                            } elseif ($seance['statut'] === 'terminee') {
+                                $badgeClass = 'badge-warning';
+                                $badgeText = 'Terminée';
+                            } elseif ($seance['statut'] === 'annule') {
+                                $badgeClass = 'badge-danger';
+                                $badgeText = 'Annulée';
+                            }
+                            ?>
+                            <span class="badge <?= $badgeClass ?>"><?= $badgeText ?></span>
                             <?php if (isset($seance['nb_presents']) && isset($seance['nb_inscrits'])): ?>
                                 <span style="color: var(--text-light); font-size: 0.9rem;">
                                     <?= $seance['nb_presents'] ?? 0 ?> / <?= $seance['nb_inscrits'] ?? 0 ?> présents

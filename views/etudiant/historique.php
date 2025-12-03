@@ -2,6 +2,7 @@
 session_start();
 require_once '../../controllers/AuthController.php';
 require_once '../../controllers/PresenceController.php';
+require_once '../../config/auto_update_seances.php'; // Mise à jour automatique des statuts
 
 AuthController::requireUserType('etudiant');
 

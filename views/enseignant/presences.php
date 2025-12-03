@@ -3,6 +3,7 @@ session_start();
 require_once '../../controllers/AuthController.php';
 require_once '../../controllers/SeanceController.php';
 require_once '../../controllers/CoursController.php';
+require_once '../../config/auto_update_seances.php'; // Mise à jour automatique des statuts
 
 AuthController::requireUserType('enseignant');
 
@@ -260,9 +261,10 @@ $seances = $seancesResult['success'] ? $seancesResult['seances'] : [];
                         <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">État de la séance</label>
                         <select name="statut" class="form-control">
                             <option value="">Tous les états</option>
-                            <option value="termine" <?= (isset($_GET['statut']) && $_GET['statut'] == 'termine') ? 'selected' : '' ?>>Terminée</option>
+                            <option value="terminee" <?= (isset($_GET['statut']) && $_GET['statut'] == 'terminee') ? 'selected' : '' ?>>Terminée</option>
                             <option value="en_cours" <?= (isset($_GET['statut']) && $_GET['statut'] == 'en_cours') ? 'selected' : '' ?>>En cours</option>
                             <option value="planifie" <?= (isset($_GET['statut']) && $_GET['statut'] == 'planifie') ? 'selected' : '' ?>>Planifiée</option>
+                            <option value="annule" <?= (isset($_GET['statut']) && $_GET['statut'] == 'annule') ? 'selected' : '' ?>>Annulée</option>
                         </select>
                     </div>
 
@@ -300,7 +302,7 @@ $seances = $seancesResult['success'] ? $seancesResult['seances'] : [];
                     if ($seance['statut'] === 'en_cours') {
                         $badgeClass = 'badge-success';
                         $badgeText = 'En cours';
-                    } elseif ($seance['statut'] === 'termine') {
+                    } elseif ($seance['statut'] === 'terminee') {
                         $badgeClass = 'badge-warning';
                         $badgeText = 'Terminée';
                     } elseif ($seance['statut'] === 'annule') {

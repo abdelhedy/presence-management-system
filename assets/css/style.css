@@ -685,6 +685,11 @@ body {
     color: #2563eb;
 }
 
+.badge-danger {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1));
+    color: #dc2626;
+}
+
 .status-badge {
     font-size: 0.9rem;
     font-weight: 600;

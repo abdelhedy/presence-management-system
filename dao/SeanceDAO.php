@@ -200,6 +200,7 @@ class SeanceDAO
 
     /**
      * Récupérer les séances actives du jour pour un étudiant
+     * CONTRAINTE: Uniquement les séances EN COURS (pas planifiées ni terminées)
      */
     public function findTodayActiveByEtudiant($idEtudiant)
     {
@@ -212,7 +213,9 @@ class SeanceDAO
                   WHERE i.id_etudiant = :id_etudiant
                   AND i.statut = 'inscrit'
                   AND s.date_seance = CURDATE()
-                  AND s.statut IN ('planifie', 'en_cours')
+                  AND s.statut = 'en_cours'
+                  AND CONCAT(s.date_seance, ' ', s.heure_debut) <= NOW()
+                  AND CONCAT(s.date_seance, ' ', s.heure_fin) >= NOW()
                   ORDER BY s.heure_debut ASC";
 
         $stmt = $this->conn->prepare($query);
@@ -359,18 +362,18 @@ class SeanceDAO
     {
         $query = "SELECT 
                   COUNT(DISTINCT s.id_seance) as total_seances,
-                  COUNT(DISTINCT CASE WHEN p.statut = 'present' THEN p.id_presence END) as total_presents,
-                  COUNT(DISTINCT CASE WHEN p.statut = 'absent' THEN p.id_presence END) as total_absents,
+                  COUNT(CASE WHEN p.statut = 'present' THEN 1 END) as total_presents,
+                  COUNT(CASE WHEN p.statut = 'absent' THEN 1 END) as total_absents,
                   ROUND(
-                      (COUNT(DISTINCT CASE WHEN p.statut = 'present' THEN p.id_presence END) * 100.0) / 
-                      NULLIF(COUNT(DISTINCT p.id_presence), 0), 
+                      (COUNT(CASE WHEN p.statut = 'present' THEN 1 END) * 100.0) / 
+                      NULLIF(COUNT(p.id_presence), 0), 
                       2
                   ) as taux_presence
                   FROM cours c
                   JOIN " . $this->table . " s ON c.id_cours = s.id_cours
                   LEFT JOIN presences p ON s.id_seance = p.id_seance
                   WHERE c.id_enseignant = :id_ens
-                  AND s.statut = 'termine'";
+                  AND s.statut = 'terminee'";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":id_ens", $idEnseignant);
@@ -479,5 +482,66 @@ class SeanceDAO
         $stmt->execute();
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Mettre à jour automatiquement les statuts des séances selon l'heure
+     * - planifie → en_cours (quand heure_debut atteinte)
+     * - en_cours → terminee (quand heure_fin dépassée)
+     */
+    public function updateStatutsAutomatique()
+    {
+        try {
+            $this->conn->beginTransaction();
+
+            // Passer les séances planifiées en "en_cours" si l'heure de début est atteinte
+            $query1 = "UPDATE " . $this->table . " 
+                      SET statut = 'en_cours' 
+                      WHERE statut = 'planifie'
+                      AND CONCAT(date_seance, ' ', heure_debut) <= NOW()
+                      AND CONCAT(date_seance, ' ', heure_fin) >= NOW()";
+            $this->conn->exec($query1);
+
+            // Passer les séances en cours en "terminee" si l'heure de fin est dépassée
+            $query2 = "UPDATE " . $this->table . " 
+                      SET statut = 'terminee' 
+                      WHERE statut IN ('en_cours', 'planifie')
+                      AND CONCAT(date_seance, ' ', heure_fin) < NOW()";
+            $this->conn->exec($query2);
+
+            $this->conn->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->conn->rollBack();
+            error_log("Erreur mise à jour statuts séances: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Marquer automatiquement les étudiants absents pour les séances terminées
+     */
+    public function marquerAbsentsAutomatique()
+    {
+        $query = "INSERT INTO presences (id_seance, id_etudiant, statut, methode_validation)
+                  SELECT s.id_seance, i.id_etudiant, 'absent', 'automatique'
+                  FROM " . $this->table . " s
+                  JOIN cours c ON s.id_cours = c.id_cours
+                  JOIN inscriptions i ON c.id_cours = i.id_cours
+                  WHERE s.statut = 'terminee'
+                  AND i.statut = 'inscrit'
+                  AND NOT EXISTS (
+                      SELECT 1 FROM presences p 
+                      WHERE p.id_seance = s.id_seance 
+                      AND p.id_etudiant = i.id_etudiant
+                  )";
+
+        try {
+            $stmt = $this->conn->prepare($query);
+            return $stmt->execute();
+        } catch (Exception $e) {
+            error_log("Erreur marquage absents automatique: " . $e->getMessage());
+            return false;
+        }
     }
 }

@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Classe métier Seance
  */
-class Seance {
+class Seance
+{
     public $id_seance;
     public $id_cours;
     public $date_seance;
@@ -11,18 +13,20 @@ class Seance {
     public $salle;
     public $type_seance;
     public $statut;
-    
+
     // Propriétés calculées (from JOIN)
     public $nom_cours;
     public $code_cours;
-    
-    public function __construct($data = []) {
+
+    public function __construct($data = [])
+    {
         if (!empty($data)) {
             $this->hydrate($data);
         }
     }
-    
-    public function hydrate($data) {
+
+    public function hydrate($data)
+    {
         foreach ($data as $key => $value) {
             $method = 'set' . str_replace('_', '', ucwords($key, '_'));
             if (method_exists($this, $method)) {
@@ -32,95 +36,114 @@ class Seance {
             }
         }
     }
-    
+
     // Getters
-    public function getId() {
+    public function getId()
+    {
         return $this->id_seance;
     }
-    
-    public function getIdCours() {
+
+    public function getIdCours()
+    {
         return $this->id_cours;
     }
-    
-    public function getDateSeance() {
+
+    public function getDateSeance()
+    {
         return $this->date_seance;
     }
-    
-    public function isToday() {
+
+    public function isToday()
+    {
         return $this->date_seance === date('Y-m-d');
     }
-    
+
     // Setters
-    public function setIdSeance($id) {
+    public function setIdSeance($id)
+    {
         $this->id_seance = (int)$id;
     }
-    
-    public function setIdCours($id) {
+
+    public function setIdCours($id)
+    {
         $this->id_cours = (int)$id;
     }
-    
-    public function setDateSeance($date) {
+
+    public function setDateSeance($date)
+    {
         $this->date_seance = $date;
     }
-    
-    public function setHeureDebut($heure) {
+
+    public function setHeureDebut($heure)
+    {
         $this->heure_debut = $heure;
     }
-    
-    public function setHeureFin($heure) {
+
+    public function setHeureFin($heure)
+    {
         $this->heure_fin = $heure;
     }
-    
-    public function setSalle($salle) {
+
+    public function setSalle($salle)
+    {
         $this->salle = htmlspecialchars(trim($salle));
     }
-    
-    public function setTypeSeance($type) {
+
+    public function setTypeSeance($type)
+    {
         $this->type_seance = $type;
     }
-    
-    public function setStatut($statut) {
+
+    public function setStatut($statut)
+    {
         $this->statut = $statut;
     }
-    
-    public function setNomCours($nom) {
+
+    public function setNomCours($nom)
+    {
         $this->nom_cours = $nom;
     }
-    
-    public function setCodeCours($code) {
+
+    public function setCodeCours($code)
+    {
         $this->code_cours = $code;
     }
-    
+
     /**
      * Validation
      */
-    public function validate() {
+    public function validate()
+    {
         $errors = [];
-        
+
         if (empty($this->id_cours)) {
             $errors[] = "Le cours est requis";
         }
-        
+
         if (empty($this->date_seance)) {
             $errors[] = "La date est requise";
         }
-        
+
         if (empty($this->heure_debut) || empty($this->heure_fin)) {
             $errors[] = "Les horaires sont requis";
         }
-        
+
         if ($this->heure_debut >= $this->heure_fin) {
             $errors[] = "L'heure de fin doit être après l'heure de début";
         }
-        
+
         if (empty($this->salle)) {
             $errors[] = "La salle est requise";
         }
-        
+
+        // Note: La contrainte "ne pas planifier dans le passé" est gérée côté client (JavaScript)
+        // pour désactiver les dates/heures passées au lieu d'afficher une erreur
+
         return $errors;
     }
-    
-    public function toArray() {
+
+    public function toArray()
+    {
         return [
             'id_seance' => $this->id_seance,
             'id_cours' => $this->id_cours,
@@ -133,4 +156,3 @@ class Seance {
         ];
     }
 }
-?>

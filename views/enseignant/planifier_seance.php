@@ -267,16 +267,112 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <script>
-        // Validation des heures
-        document.querySelector('form')?.addEventListener('submit', function(e) {
-            const heureDebut = document.getElementById('heure_debut').value;
-            const heureFin = document.getElementById('heure_fin').value;
+        const dateInput = document.getElementById('date_seance');
+        const heureDebutInput = document.getElementById('heure_debut');
+        const heureFinInput = document.getElementById('heure_fin');
 
+        // Fonction pour obtenir l'heure actuelle au format HH:MM
+        function getCurrentTime() {
+            const now = new Date();
+            return now.getHours().toString().padStart(2, '0') + ':' +
+                now.getMinutes().toString().padStart(2, '0');
+        }
+
+        // Fonction pour obtenir la date d'aujourd'hui au format YYYY-MM-DD
+        function getTodayDate() {
+            const today = new Date();
+            return today.toISOString().split('T')[0];
+        }
+
+        // Fonction pour vérifier si une heure est dans le passé (avec marge de sécurité)
+        function isTimePast(timeStr) {
+            const now = new Date();
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            const selectedTime = new Date();
+            selectedTime.setHours(hours, minutes, 0, 0);
+
+            // Ajouter une marge de 1 minute pour éviter les faux positifs
+            return selectedTime.getTime() < (now.getTime() - 60000);
+        }
+
+        // Vérifier et bloquer les heures passées si la date est aujourd'hui
+        function updateTimeConstraints() {
+            const selectedDate = dateInput.value;
+            const todayDate = getTodayDate();
+
+            if (selectedDate === todayDate) {
+                // Si c'est aujourd'hui, définir l'heure minimum
+                const currentTime = getCurrentTime();
+                heureDebutInput.min = currentTime;
+
+                // Si l'heure de début sélectionnée est dans le passé, la réinitialiser
+                if (heureDebutInput.value && isTimePast(heureDebutInput.value)) {
+                    heureDebutInput.value = '';
+                    heureFinInput.value = '';
+                }
+            } else {
+                // Pour les autres jours, pas de minimum
+                heureDebutInput.removeAttribute('min');
+            }
+        }
+
+        // Écouter les changements de date
+        dateInput.addEventListener('change', updateTimeConstraints);
+
+        // Validation au moment du changement d'heure de début
+        heureDebutInput.addEventListener('change', function() {
+            const selectedDate = dateInput.value;
+            const todayDate = getTodayDate();
+
+            if (selectedDate === todayDate) {
+                if (isTimePast(this.value)) {
+                    alert('Impossible de planifier une séance dans le passé. Veuillez choisir une heure future.');
+                    this.value = '';
+                    heureFinInput.value = '';
+                    return;
+                }
+            }
+
+            // Suggérer automatiquement une heure de fin (+1h30)
+            if (this.value && !heureFinInput.value) {
+                const [hours, minutes] = this.value.split(':').map(Number);
+                const endHours = hours + 1;
+                const endMinutes = minutes + 30;
+
+                const finalHours = endHours + Math.floor(endMinutes / 60);
+                const finalMinutes = endMinutes % 60;
+
+                if (finalHours < 24) {
+                    heureFinInput.value = finalHours.toString().padStart(2, '0') + ':' +
+                        finalMinutes.toString().padStart(2, '0');
+                }
+            }
+        });
+
+        // Validation finale avant soumission
+        document.querySelector('form')?.addEventListener('submit', function(e) {
+            const selectedDate = dateInput.value;
+            const heureDebut = heureDebutInput.value;
+            const heureFin = heureFinInput.value;
+            const todayDate = getTodayDate();
+
+            // Vérifier si c'est dans le passé
+            if (selectedDate === todayDate && isTimePast(heureDebut)) {
+                e.preventDefault();
+                alert('Impossible de planifier une séance dans le passé. Veuillez choisir une heure future.');
+                return;
+            }
+
+            // Vérifier que l'heure de fin est après l'heure de début
             if (heureDebut && heureFin && heureDebut >= heureFin) {
                 e.preventDefault();
                 alert('L\'heure de fin doit être après l\'heure de début');
+                return;
             }
         });
+
+        // Initialiser au chargement
+        updateTimeConstraints();
     </script>
 </body>
 

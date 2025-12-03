@@ -3,6 +3,7 @@ session_start();
 require_once '../../controllers/AuthController.php';
 require_once '../../controllers/SeanceController.php';
 require_once '../../controllers/ImageController.php';
+require_once '../../config/auto_update_seances.php'; // Mise à jour automatique des statuts
 
 AuthController::requireUserType('etudiant');
 
@@ -239,9 +240,13 @@ if (isset($_GET['id_seance'])) {
             </div>
         <?php elseif (empty($seancesActives)): ?>
             <div class="alert alert-info">
-                <h3 style="margin-bottom: 0.5rem;">ℹ️ Aucune séance active</h3>
+                <h3 style="margin-bottom: 0.5rem;">ℹ️ Aucune séance en cours</h3>
                 <p>
-                    Aucune séance n'est en cours ou planifiée aujourd'hui pour laquelle vous pouvez marquer votre présence.
+                    Il n'y a actuellement aucune séance <strong>en cours</strong> à laquelle vous pouvez marquer votre présence.
+                </p>
+                <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 0.5rem;">
+                    💡 Rappel : Vous ne pouvez marquer votre présence que pendant les horaires de la séance.
+                    <a href="mes_seances.php" style="color: var(--primary-color);">Voir mon emploi du temps →</a>
                 </p>
             </div>
         <?php else: ?>

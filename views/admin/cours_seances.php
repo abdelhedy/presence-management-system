@@ -3,17 +3,16 @@ session_start();
 require_once '../../controllers/AuthController.php';
 require_once '../../controllers/SeanceController.php';
 require_once '../../controllers/CoursController.php';
-require_once '../../config/auto_update_seances.php'; // Mise à jour automatique des statuts
+require_once '../../config/auto_update_seances.php';
 
-AuthController::requireUserType('enseignant');
+AuthController::requireUserType('administrateur');
 
 $seanceController = new SeanceController();
 $coursController = new CoursController();
-$idEnseignant = $_SESSION['enseignant_id'];
 
 // Récupérer l'ID du cours
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header('Location: mes_cours.php');
+    header('Location: cours.php');
     exit;
 }
 
@@ -22,16 +21,10 @@ $idCours = intval($_GET['id']);
 // Récupérer les informations du cours
 $coursResult = $coursController->getById($idCours);
 if (!$coursResult['success']) {
-    header('Location: mes_cours.php');
+    header('Location: cours.php');
     exit;
 }
 $cours = $coursResult['cours'];
-
-// Vérifier que le cours appartient à l'enseignant
-if ($cours->id_enseignant != $idEnseignant) {
-    header('Location: mes_cours.php');
-    exit;
-}
 
 // Récupérer toutes les séances du cours
 $seancesResult = $seanceController->getByCours($idCours);
@@ -184,40 +177,25 @@ $seances = $seancesResult['success'] ? $seancesResult['seances'] : [];
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h2 style="font-size: 1.3rem; margin-bottom: 0.5rem;">👨‍🏫 Enseignant</h2>
+            <h2 style="font-size: 1.3rem; margin-bottom: 0.5rem;">🔐 Admin</h2>
             <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem;"><?= htmlspecialchars($_SESSION['user_name']) ?></p>
         </div>
-
         <nav class="sidebar-nav">
-            <a href="dashboard.php" class="nav-item">
-                <span>📊</span> Dashboard
-            </a>
-            <a href="mes_cours.php" class="nav-item active">
-                <span>📚</span> Mes Cours
-            </a>
-            <a href="create_cours.php" class="nav-item">
-                <span>➕</span> Créer un Cours
-            </a>
-            <a href="mes_seances.php" class="nav-item">
-                <span>🗓️</span> Mes Séances
-            </a>
-            <a href="planifier_seance.php" class="nav-item">
-                <span>📅</span> Planifier une Séance
-            </a>
-            <a href="presences.php" class="nav-item">
-                <span>✓</span> Présences
-            </a>
-            <a href="../logout.php" class="nav-item" style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem;">
-                <span>🚪</span> Déconnexion
-            </a>
+            <a href="dashboard.php" class="nav-item"><span>📊</span> Dashboard</a>
+            <a href="utilisateurs.php" class="nav-item"><span>👥</span> Utilisateurs</a>
+            <a href="ajouter_utilisateur.php" class="nav-item"><span>➕</span> Ajouter Utilisateur</a>
+            <a href="cours.php" class="nav-item active"><span>📚</span> Cours</a>
+            <a href="seances.php" class="nav-item"><span>🗓️</span> Séances</a>
+            <a href="presences.php" class="nav-item"><span>✓</span> Présences</a>
+            <a href="../logout.php" class="nav-item" style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem;"><span>🚪</span> Déconnexion</a>
         </nav>
     </div>
 
     <!-- Main Content -->
     <div class="main-content">
         <div style="margin-bottom: 2rem;">
-            <a href="mes_cours.php" style="color: var(--primary-color); text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-                ← Retour à mes cours
+            <a href="cours.php" style="color: var(--primary-color); text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+                ← Retour aux cours
             </a>
         </div>
 
@@ -235,6 +213,10 @@ $seances = $seancesResult['success'] ? $seancesResult['seances'] : [];
                     <?php endif; ?>
                     <div class="cours-stats">
                         <div class="stat-item">
+                            <span>👨‍🏫</span>
+                            <span><?= htmlspecialchars($cours->nom_enseignant ?? 'Non assigné') ?></span>
+                        </div>
+                        <div class="stat-item">
                             <span>👥</span>
                             <span><?= $cours->nb_etudiants ?? 0 ?> étudiants inscrits</span>
                         </div>
@@ -244,9 +226,6 @@ $seances = $seancesResult['success'] ? $seancesResult['seances'] : [];
                         </div>
                     </div>
                 </div>
-                <a href="planifier_seance.php?id_cours=<?= $idCours ?>" class="btn btn-primary">
-                    ➕ Planifier une séance
-                </a>
             </div>
         </div>
 
@@ -260,8 +239,7 @@ $seances = $seancesResult['success'] ? $seancesResult['seances'] : [];
                 <div class="empty-state">
                     <div style="font-size: 4rem; margin-bottom: 1rem;">📅</div>
                     <h3>Aucune séance planifiée pour ce cours</h3>
-                    <p style="color: var(--text-light); margin-bottom: 2rem;">Planifiez la première séance de ce cours</p>
-                    <a href="planifier_seance.php?id_cours=<?= $idCours ?>" class="btn btn-primary">➕ Planifier une séance</a>
+                    <p style="color: var(--text-light);">L'enseignant doit planifier des séances</p>
                 </div>
             </div>
         <?php else: ?>
@@ -278,16 +256,16 @@ $seances = $seancesResult['success'] ? $seancesResult['seances'] : [];
                         </div>
                         <div style="display: flex; align-items: center; gap: 1rem;">
                             <?php
-                            $badgeClass = 'badge-info';
+                            $badgeClass = 'badge-planifie';
                             $badgeText = 'Planifiée';
                             if ($seance['statut'] === 'en_cours') {
-                                $badgeClass = 'badge-success';
+                                $badgeClass = 'badge-en-cours';
                                 $badgeText = 'En cours';
                             } elseif ($seance['statut'] === 'terminee') {
-                                $badgeClass = 'badge-warning';
+                                $badgeClass = 'badge-termine';
                                 $badgeText = 'Terminée';
                             } elseif ($seance['statut'] === 'annule') {
-                                $badgeClass = 'badge-danger';
+                                $badgeClass = 'badge-annule';
                                 $badgeText = 'Annulée';
                             }
                             ?>
@@ -298,7 +276,7 @@ $seances = $seancesResult['success'] ? $seancesResult['seances'] : [];
                                 </span>
                             <?php endif; ?>
                             <?php if ($seance['statut'] == 'terminee'): ?>
-                                <a href="presence_detail.php?id_seance=<?= intval($seance['id_seance']) ?>&amp;from_cours=<?= intval($idCours) ?>"
+                                <a href="presence_detail.php?id_seance=<?= intval($seance['id_seance']) ?>&from_cours=<?= intval($idCours) ?>"
                                     class="btn btn-secondary"
                                     style="padding: 0.5rem 1rem; text-decoration: none; display: inline-block;">
                                     👁️ Voir les présences

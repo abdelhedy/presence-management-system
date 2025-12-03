@@ -3,6 +3,7 @@ session_start();
 require_once '../../controllers/AuthController.php';
 require_once '../../controllers/EtudiantController.php';
 require_once '../../controllers/PresenceController.php';
+require_once '../../config/auto_update_seances.php'; // Mise à jour automatique des statuts
 
 AuthController::requireUserType('etudiant');
 
@@ -257,9 +258,12 @@ $mesCours = $coursResult['success'] ? $coursResult['cours'] : [];
                     if ($seanceStatut === 'en_cours') {
                         $statutClass = 'badge-info';
                         $statutText = '🔵 En cours';
-                    } elseif ($seanceStatut === 'termine') {
+                    } elseif ($seanceStatut === 'terminee') {
                         $statutClass = 'badge';
                         $statutText = '⚫ Terminée';
+                    } elseif ($seanceStatut === 'annule') {
+                        $statutClass = 'badge-danger';
+                        $statutText = '🔴 Annulée';
                     } else {
                         $statutClass = 'badge-warning';
                         $statutText = '🟡 Planifiée';

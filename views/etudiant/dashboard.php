@@ -5,6 +5,7 @@ require_once '../../controllers/SeanceController.php';
 require_once '../../controllers/EtudiantController.php';
 require_once '../../controllers/PresenceController.php';
 require_once '../../controllers/ImageController.php';
+require_once '../../config/auto_update_seances.php'; // Mise à jour automatique des statuts
 
 AuthController::requireUserType('etudiant');
 

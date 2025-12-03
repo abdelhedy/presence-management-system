@@ -3,6 +3,7 @@ session_start();
 require_once '../../controllers/AuthController.php';
 require_once '../../controllers/CoursController.php';
 require_once '../../controllers/SeanceController.php';
+require_once '../../config/auto_update_seances.php'; // Mise à jour automatique des statuts
 
 AuthController::requireUserType('enseignant');
 
@@ -308,6 +309,12 @@ foreach ($seancesAvenir as $seance) {
                                 if ($seance['statut'] === 'en_cours') {
                                     $badgeClass = 'badge-success';
                                     $badgeText = 'En cours';
+                                } elseif ($seance['statut'] === 'terminee') {
+                                    $badgeClass = 'badge-warning';
+                                    $badgeText = 'Terminée';
+                                } elseif ($seance['statut'] === 'annule') {
+                                    $badgeClass = 'badge-danger';
+                                    $badgeText = 'Annulée';
                                 }
                                 ?>
                                 <span class="badge <?= $badgeClass ?>"><?= $badgeText ?></span>
