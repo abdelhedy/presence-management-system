@@ -1,5 +1,10 @@
 <?php
-require_once 'config/database.php';
+if (PHP_SAPI !== 'cli') {
+    http_response_code(403);
+    exit('Ce script doit être exécuté en ligne de commande.');
+}
+
+require_once __DIR__ . '/../config/database.php';
 
 $database = new Database();
 $pdo = $database->getConnection();

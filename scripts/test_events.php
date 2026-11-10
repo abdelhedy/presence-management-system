@@ -1,5 +1,10 @@
 <?php
-require_once 'config/Database.php';
+if (PHP_SAPI !== 'cli') {
+    http_response_code(403);
+    exit('Ce script doit être exécuté en ligne de commande.');
+}
+
+require_once __DIR__ . '/../config/database.php';
 
 $database = new Database();
 $conn = $database->getConnection();
@@ -28,7 +33,7 @@ try {
                             NOW()
                      FROM seances s
                      JOIN inscriptions i ON i.id_cours = s.id_cours
-                     WHERE s.statut = 'termine'
+                     WHERE s.statut = 'terminee'
                        AND i.statut = 'inscrit'
                        AND NOT EXISTS (
                            SELECT 1 FROM presences p
@@ -72,10 +77,10 @@ $stmt = $conn->exec("UPDATE seances
 echo "   ✓ Séances passées en 'en_cours': $stmt\n";
 
 $stmt = $conn->exec("UPDATE seances
-                     SET statut = 'termine'
+                     SET statut = 'terminee'
                      WHERE statut = 'en_cours'
                        AND NOW() >= CONCAT(date_seance, ' ', heure_fin)");
-echo "   ✓ Séances passées en 'termine': $stmt\n";
+echo "   ✓ Séances passées en 'terminee': $stmt\n";
 
 // 6. Vérifier les inscriptions et présences pour les séances terminées
 echo "\n6. Séances terminées avec étudiants:\n";
@@ -85,7 +90,7 @@ $stmt = $conn->query("SELECT s.id_seance,
                       FROM seances s
                       JOIN inscriptions i ON i.id_cours = s.id_cours AND i.statut = 'inscrit'
                       LEFT JOIN presences p ON p.id_seance = s.id_seance AND p.id_etudiant = i.id_etudiant
-                      WHERE s.statut = 'termine'
+                      WHERE s.statut = 'terminee'
                       GROUP BY s.id_seance
                       ORDER BY s.date_seance DESC
                       LIMIT 5");
@@ -105,7 +110,7 @@ $stmt = $conn->prepare("INSERT INTO presences (id_seance, id_etudiant, statut, m
                                NOW()
                         FROM seances s
                         JOIN inscriptions i ON i.id_cours = s.id_cours
-                        WHERE s.statut = 'termine'
+                        WHERE s.statut = 'terminee'
                           AND i.statut = 'inscrit'
                           AND NOT EXISTS (
                               SELECT 1 FROM presences p
@@ -126,7 +131,7 @@ $stmt = $conn->query("SELECT s.id_seance,
                       FROM seances s
                       JOIN inscriptions i ON i.id_cours = s.id_cours AND i.statut = 'inscrit'
                       LEFT JOIN presences p ON p.id_seance = s.id_seance AND p.id_etudiant = i.id_etudiant
-                      WHERE s.statut = 'termine'
+                      WHERE s.statut = 'terminee'
                       GROUP BY s.id_seance
                       ORDER BY s.date_seance DESC
                       LIMIT 5");

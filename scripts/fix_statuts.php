@@ -1,6 +1,11 @@
 <?php
-require_once 'config/database.php';
-require_once 'dao/SeanceDAO.php';
+if (PHP_SAPI !== 'cli') {
+    http_response_code(403);
+    exit('Ce script doit être exécuté en ligne de commande.');
+}
+
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../dao/SeanceDAO.php';
 
 $database = new Database();
 $pdo = $database->getConnection();

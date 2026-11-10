@@ -1,5 +1,10 @@
 <?php
-require_once 'config/Database.php';
+if (PHP_SAPI !== 'cli') {
+    http_response_code(403);
+    exit('Ce script doit être exécuté en ligne de commande.');
+}
+
+require_once __DIR__ . '/../config/database.php';
 
 $database = new Database();
 $conn = $database->getConnection();
@@ -28,5 +33,5 @@ foreach ($events as $event) {
 echo "\n✅ Tous les événements sont maintenant actifs !\n";
 echo "\nIls s'exécuteront automatiquement chaque minute pour:\n";
 echo "   1. Passer les séances en 'en_cours' quand l'heure de début est atteinte\n";
-echo "   2. Passer les séances en 'termine' quand l'heure de fin est atteinte\n";
+echo "   2. Passer les séances en 'terminee' quand l'heure de fin est atteinte\n";
 echo "   3. Insérer les absences automatiques pour les étudiants qui n'ont pas marqué leur présence\n";
