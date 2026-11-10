@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../dao/ImageReferenceDAO.php';
 require_once __DIR__ . '/../dao/EtudiantDAO.php';
+require_once __DIR__ . '/../config/env.php';
 
 /**
  * ImageController - Gestion des photos de profil et reconnaissance faciale
@@ -151,6 +152,47 @@ class ImageController
     }
 
     /**
+     * Interpréteur Python à utiliser :
+     * PYTHON_BIN (.env) > .venv du projet > python / python3 du PATH
+     */
+    private function getPythonBin()
+    {
+        $root = dirname(__DIR__);
+        $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+
+        $bin = env('PYTHON_BIN', '');
+        if ($bin !== '') {
+            // Chemin relatif : par rapport à la racine du projet
+            $isAbsolute = preg_match('#^([a-zA-Z]:)?[\\\\/]#', $bin);
+            $isPath = strpbrk($bin, '/\\') !== false;
+            return ($isPath && !$isAbsolute) ? $root . '/' . $bin : $bin;
+        }
+
+        $venvPython = $isWindows ? $root . '/.venv/Scripts/python.exe' : $root . '/.venv/bin/python';
+        if (file_exists($venvPython)) {
+            return $venvPython;
+        }
+
+        return $isWindows ? 'python' : 'python3';
+    }
+
+    /**
+     * Exécuter un script Python et retourner sa sortie
+     * (stderr est ignoré pour éviter les warnings TensorFlow)
+     */
+    private function runPython($script, array $args)
+    {
+        $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+        $parts = array_map('escapeshellarg', array_merge([$this->getPythonBin(), $script], $args));
+        $command = implode(' ', $parts) . ' 2>' . ($isWindows ? 'NUL' : '/dev/null');
+
+        // Sortie en UTF-8 : sinon les logs DeepFace (emojis) échouent sous Windows
+        putenv('PYTHONUTF8=1');
+
+        return shell_exec($command);
+    }
+
+    /**
      * Extraire l'encodage facial avec Python
      */
     private function extractFaceEncoding($imagePath)
@@ -163,11 +205,7 @@ class ImageController
             ];
         }
 
-        // Exécuter le script Python (utiliser 'python' sur Windows)
-        $pythonCmd = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? 'python' : 'python3';
-        $command = escapeshellcmd("$pythonCmd " . $this->pythonScriptPath . " " . escapeshellarg($imagePath));
-        // Rediriger stderr vers null pour éviter les warnings TensorFlow
-        $output = shell_exec($command . " 2>nul");
+        $output = $this->runPython($this->pythonScriptPath, [$imagePath]);
 
         // Parser le résultat JSON
         $result = json_decode($output, true);
@@ -221,13 +259,7 @@ class ImageController
         // Chemin complet de l'image de référence
         $referencePath = __DIR__ . '/../' . $referenceImage['chemin_image'];
 
-        // Exécuter la comparaison (utiliser 'python' sur Windows)
-        $pythonCmd = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? 'python' : 'python3';
-        $command = escapeshellcmd("$pythonCmd $pythonScript " .
-            escapeshellarg($referencePath) . " " .
-            escapeshellarg($capturedImagePath));
-        // Rediriger stderr vers null pour éviter les warnings TensorFlow
-        $output = shell_exec($command . " 2>nul");
+        $output = $this->runPython($pythonScript, [$referencePath, $capturedImagePath]);
 
         // Parser le résultat
         $result = json_decode($output, true);
