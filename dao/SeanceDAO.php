@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../config/Database.php';
+require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../models/Seance.php';
 
 /**
@@ -232,7 +232,7 @@ class SeanceDAO
     {
         $query = "SELECT s.*, c.nom_cours, c.code_cours,
                   p.statut as presence_statut,
-                  p.date_marquage,
+                  p.date_heure_marquage AS date_marquage,
                   CONCAT(u.nom, ' ', u.prenom) as nom_enseignant
                   FROM inscriptions i
                   JOIN cours c ON i.id_cours = c.id_cours
@@ -451,7 +451,7 @@ class SeanceDAO
                   COUNT(*) as total_seances,
                   SUM(CASE WHEN statut = 'planifie' THEN 1 ELSE 0 END) as seances_planifiees,
                   SUM(CASE WHEN statut = 'en_cours' THEN 1 ELSE 0 END) as seances_en_cours,
-                  SUM(CASE WHEN statut = 'termine' THEN 1 ELSE 0 END) as seances_terminees,
+                  SUM(CASE WHEN statut = 'terminee' THEN 1 ELSE 0 END) as seances_terminees,
                   SUM(CASE WHEN statut = 'annule' THEN 1 ELSE 0 END) as seances_annulees,
                   COUNT(DISTINCT id_cours) as cours_avec_seances
                   FROM " . $this->table;
@@ -470,7 +470,7 @@ class SeanceDAO
         $query = "SELECT 
                   DATE(date_seance) as date,
                   COUNT(*) as nb_seances,
-                  SUM(CASE WHEN statut = 'termine' THEN 1 ELSE 0 END) as nb_terminees
+                  SUM(CASE WHEN statut = 'terminee' THEN 1 ELSE 0 END) as nb_terminees
                   FROM " . $this->table . "
                   WHERE date_seance BETWEEN :date_debut AND :date_fin
                   GROUP BY DATE(date_seance)

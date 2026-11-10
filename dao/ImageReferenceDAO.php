@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../config/Database.php';
+require_once __DIR__ . '/../config/database.php';
 
 /**
  * ImageReferenceDAO - Gestion des images de référence pour reconnaissance faciale

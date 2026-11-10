@@ -185,7 +185,7 @@ class AdminController
                 p.id_presence,
                 p.statut,
                 p.methode_validation,
-                p.date_marquage,
+                p.date_heure_marquage AS date_marquage,
                 s.date_seance,
                 s.heure_debut,
                 s.heure_fin,

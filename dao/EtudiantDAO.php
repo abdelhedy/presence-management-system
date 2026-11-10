@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../config/Database.php';
+require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../models/Etudiant.php';
 
 /**
@@ -27,7 +27,7 @@ class EtudiantDAO {
         
         $stmt = $this->conn->prepare($query);
         
-        $stmt->bindParam(":id_user", $etudiant->getId());
+        $stmt->bindValue(":id_user", $etudiant->getId());
         $stmt->bindParam(":numero", $etudiant->numero_etudiant);
         $stmt->bindParam(":niveau", $etudiant->niveau);
         $stmt->bindParam(":specialite", $etudiant->specialite);

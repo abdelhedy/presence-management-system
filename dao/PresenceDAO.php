@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../config/Database.php';
+require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../models/Presence.php';
 
 /**
@@ -392,7 +392,7 @@ class PresenceDAO
                       2
                   ) as taux_presence
                   FROM cours c
-                  JOIN seances s ON c.id_cours = s.id_cours AND s.statut = 'termine'
+                  JOIN seances s ON c.id_cours = s.id_cours AND s.statut = 'terminee'
                   LEFT JOIN " . $this->table . " p ON s.id_seance = p.id_seance
                   GROUP BY c.id_cours
                   ORDER BY taux_presence ASC";
@@ -424,7 +424,7 @@ class PresenceDAO
                   FROM enseignants ens
                   JOIN utilisateurs u ON ens.id_utilisateur = u.id_utilisateur
                   LEFT JOIN cours c ON ens.id_enseignant = c.id_enseignant
-                  LEFT JOIN seances s ON c.id_cours = s.id_cours AND s.statut = 'termine'
+                  LEFT JOIN seances s ON c.id_cours = s.id_cours AND s.statut = 'terminee'
                   LEFT JOIN " . $this->table . " p ON s.id_seance = p.id_seance
                   GROUP BY ens.id_enseignant
                   ORDER BY taux_presence DESC";
