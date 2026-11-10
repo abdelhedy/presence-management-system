@@ -1,0 +1,17 @@
+# Environnement
+.env
+
+# Python
+.venv/
+__pycache__/
+
+# Fichiers uploadés (on garde seulement la structure des dossiers)
+uploads/images_reference/*
+uploads/temp/*
+!uploads/images_reference/.gitkeep
+!uploads/temp/.gitkeep
+
+# Logs et fichiers système
+*.log
+.DS_Store
+Thumbs.db
