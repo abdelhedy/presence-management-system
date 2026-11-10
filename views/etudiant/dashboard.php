@@ -366,7 +366,7 @@ $hasImage = $imageResult['success'];
         </div>
 
         <!-- Actions rapides -->
-        <div class="card" style="margin-top: 2rem;">
+        <div class="card">
             <h2 style="margin-bottom: 1.5rem;">⚡ Actions rapides</h2>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
                 <a href="marquer_presence.php" class="btn btn-primary" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
