@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../config/Database.php';
+require_once __DIR__ . '/../config/database.php';
 
 /**
  * InscriptionDAO - Gestion des inscriptions aux cours
@@ -18,8 +18,8 @@ class InscriptionDAO
     /**
      * Créer une inscription manuelle
      * 
-     * Note: Les inscriptions automatiques sont gérées par le trigger 
-     * trg_after_cours_insert lors de la création d'un cours
+     * Note: Les inscriptions automatiques sont faites par
+     * inscrireEtudiantsEligibles() lors de la création d'un cours
      */
     public function create($idCours, $idEtudiant)
     {
@@ -157,6 +157,59 @@ class InscriptionDAO
         $stmt->bindParam(":id", $id);
 
         return $stmt->execute();
+    }
+
+    /**
+     * Inscrire au cours tous les étudiants du même niveau, de la même
+     * spécialité et de la même année scolaire (ignore les déjà inscrits)
+     */
+    public function inscrireEtudiantsEligibles($idCours)
+    {
+        $query = "INSERT INTO " . $this->table . " (id_cours, id_etudiant, date_inscription, statut)
+                  SELECT c.id_cours, e.id_etudiant, NOW(), 'inscrit'
+                  FROM cours c
+                  JOIN etudiants e ON e.niveau = c.niveau
+                                  AND e.specialite = c.specialite
+                                  AND e.annee_scolaire = c.annee_scolaire
+                  WHERE c.id_cours = :id_cours
+                  AND NOT EXISTS (
+                      SELECT 1 FROM " . $this->table . " i
+                      WHERE i.id_cours = c.id_cours
+                      AND i.id_etudiant = e.id_etudiant
+                  )";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":id_cours", $idCours);
+        $stmt->execute();
+
+        return $stmt->rowCount();
+    }
+
+    /**
+     * Inscrire un étudiant à tous les cours actifs de son niveau, de sa
+     * spécialité et de son année scolaire (ignore les déjà inscrits)
+     */
+    public function inscrireAuxCoursEligibles($idEtudiant)
+    {
+        $query = "INSERT INTO " . $this->table . " (id_cours, id_etudiant, date_inscription, statut)
+                  SELECT c.id_cours, e.id_etudiant, NOW(), 'inscrit'
+                  FROM etudiants e
+                  JOIN cours c ON c.niveau = e.niveau
+                              AND c.specialite = e.specialite
+                              AND c.annee_scolaire = e.annee_scolaire
+                  WHERE e.id_etudiant = :id_etudiant
+                  AND c.statut = 'actif'
+                  AND NOT EXISTS (
+                      SELECT 1 FROM " . $this->table . " i
+                      WHERE i.id_cours = c.id_cours
+                      AND i.id_etudiant = e.id_etudiant
+                  )";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":id_etudiant", $idEtudiant);
+        $stmt->execute();
+
+        return $stmt->rowCount();
     }
 
     /**

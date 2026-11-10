@@ -19,7 +19,7 @@ class CoursController
 
     /**
      * Créer un nouveau cours
-     * Note: Le trigger MySQL crée automatiquement les inscriptions
+     * Les étudiants correspondants sont inscrits automatiquement
      */
     public function create($data)
     {
@@ -50,11 +50,11 @@ class CoursController
             ];
         }
 
-        // Créer le cours (le trigger fera les inscriptions automatiquement)
         $coursId = $this->coursDAO->create($cours);
 
         if ($coursId) {
-            // Compter les inscriptions créées par le trigger
+            // Inscrire les étudiants du même niveau / spécialité / année
+            $this->inscriptionDAO->inscrireEtudiantsEligibles($coursId);
             $nbInscriptions = $this->inscriptionDAO->countByCours($coursId);
 
             return [

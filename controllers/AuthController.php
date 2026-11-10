@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../dao/UserDAO.php';
 require_once __DIR__ . '/../dao/EtudiantDAO.php';
 require_once __DIR__ . '/../dao/EnseignantDAO.php';
+require_once __DIR__ . '/../dao/InscriptionDAO.php';
 
 /**
  * AuthController - Gestion de l'authentification
@@ -137,6 +138,10 @@ class AuthController
         $etudiantId = $this->etudiantDAO->create($etudiant);
 
         if ($etudiantId) {
+            // Inscrire l'étudiant aux cours existants de son niveau / spécialité / année
+            $inscriptionDAO = new InscriptionDAO();
+            $inscriptionDAO->inscrireAuxCoursEligibles($etudiantId);
+
             // Auto-login après inscription
             $_SESSION['user_id'] = $userId;
             $_SESSION['user_name'] = $data['nom'] . ' ' . $data['prenom'];
