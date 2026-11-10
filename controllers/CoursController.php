@@ -270,10 +270,7 @@ if (basename($_SERVER['PHP_SELF']) === 'CoursController.php' && isset($_GET['act
             case 'create':
                 // Créer un cours
                 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                    // Log des données reçues (pour debug)
-                    error_log('CoursController - Données reçues: ' . print_r($_POST, true));
                     $result = $controller->create($_POST);
-                    error_log('CoursController - Résultat: ' . print_r($result, true));
                     echo json_encode($result);
                 }
                 break;

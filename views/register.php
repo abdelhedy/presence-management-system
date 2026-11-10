@@ -11,11 +11,6 @@ $error = "";
 $success = "";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // DEBUG - Afficher les données reçues
-    // echo "<pre style='background: #f0f0f0; padding: 10px; margin: 10px; border: 2px solid red;'>";
-    // echo "DONNÉES REÇUES:\n";
-    // print_r($_POST);
-    // echo "</pre>";
     $authController = new AuthController();
     $result = $authController->register($_POST);
 

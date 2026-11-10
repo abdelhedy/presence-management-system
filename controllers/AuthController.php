@@ -75,22 +75,8 @@ class AuthController
         $user->setNumeroTelephone($data['telephone'] ?? '');
 
 
-        // DEBUG: Check what values are set in the User object
-        // error_log("User object before validation:");
-        // error_log("Nom: " . $user->ge);
-        // error_log("Prenom: " . $user->prenom);
-        // error_log("Email: " . $user->email);
-        // error_log("Type: " . $user->type_utilisateur);
-
         // Valider les données
         $errors = $user->validate();
-        if (!empty($errors)) {
-            return ['success' => false, 'errors' => $errors];
-        }
-
-        // DEBUG: Check validation results
-        error_log("Validation errors: " . print_r($errors, true));
-
         if (!empty($errors)) {
             return ['success' => false, 'errors' => $errors];
         }

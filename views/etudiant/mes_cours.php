@@ -8,11 +8,7 @@ AuthController::requireUserType('etudiant');
 $etudiantController = new EtudiantController();
 $idEtudiant = $_SESSION['etudiant_id'] ?? null;
 
-// Debug
 if (!$idEtudiant) {
-    echo '<pre>Session data: ';
-    print_r($_SESSION);
-    echo '</pre>';
     die('ID étudiant non trouvé dans la session. Veuillez vous reconnecter.');
 }
 
