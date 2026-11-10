@@ -12,6 +12,8 @@ Students check in to a live session with their webcam. The system compares their
 
 > The user interface and source code identifiers are in French.
 
+![Student dashboard](docs/screenshots/student-dashboard.png)
+
 ---
 
 ## Table of Contents
